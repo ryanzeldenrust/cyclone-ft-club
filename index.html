@@ -3035,6 +3035,120 @@ body { font-family:'JetBrains Mono',monospace; background:#1a1a1a;
 }
 
 .wh-btn{display:flex;align-items:center;justify-content:center;width:calc(100% - 28px);margin:12px 14px 4px;padding:13px 16px;background:var(--ink);color:var(--gold-bright);border:none;border-radius:14px;cursor:pointer;font-family:'Anton',sans-serif;font-size:15px;letter-spacing:2px;box-shadow:0 3px 0 rgba(0,0,0,0.4);transition:transform 0.1s;}.wh-btn:active{transform:translateY(2px);}.wh-panel{max-height:0;overflow:hidden;transition:max-height 0.35s ease;margin:0 14px;}.wh-panel.open{max-height:800px;overflow-y:auto;padding-bottom:8px;}.wh-panel::-webkit-scrollbar{display:none;}.wh-entry{background:var(--white);border:2.5px solid var(--ink);border-radius:14px;padding:12px 14px;margin-bottom:10px;box-shadow:2px 2px 0 var(--ink);}.wh-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}.wh-wnum{font-family:'Anton',sans-serif;font-size:13px;color:var(--red-deep);letter-spacing:1px;}.wh-wrange{font-size:9px;font-weight:700;color:var(--gray);letter-spacing:0.6px;}.wh-winner{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,rgba(244,196,48,0.18),rgba(244,196,48,0.04));border:2px solid var(--gold-deep);border-radius:10px;padding:8px 12px;margin-bottom:6px;}.wh-crown{font-size:20px;}.wh-wname{font-family:'Anton',sans-serif;font-size:17px;color:var(--ink);flex:1;}.wh-wmakes{font-family:'Anton',sans-serif;font-size:21px;color:var(--red-deep);}.wh-wmakes small{font-size:9px;font-weight:700;color:var(--gray);}.wh-runners{display:flex;gap:6px;flex-wrap:wrap;}.wh-runner{display:flex;align-items:center;gap:5px;background:rgba(0,0,0,0.04);border:1.5px solid rgba(0,0,0,0.1);border-radius:8px;padding:4px 9px;}.wh-rname{font-size:10px;font-weight:700;color:var(--gray);letter-spacing:0.5px;}.wh-rmakes{font-family:'Anton',sans-serif;font-size:13px;color:var(--ink);}.wh-empty{text-align:center;padding:20px;font-size:11px;font-weight:700;color:var(--gray);letter-spacing:0.8px;line-height:1.8;}
+
+/* ══════════════════════════════════════════════════
+   MOBILE FIXES — tab bar, modals, scroll indicators
+   ══════════════════════════════════════════════════ */
+
+/* ── TAB BAR — always visible, above everything ── */
+.tab-bar {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 100% !important;
+  max-width: 430px !important;
+  background: linear-gradient(180deg, #f0f0f0 0%, var(--white) 40%) !important;
+  border-top: 4px solid var(--ink) !important;
+  box-shadow: 0 -6px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.9) !important;
+  display: flex !important;
+  z-index: 9999 !important;
+  padding: 8px 6px 8px 6px !important;
+  padding-bottom: max(16px, env(safe-area-inset-bottom, 16px)) !important;
+  box-sizing: border-box !important;
+}
+
+/* ── APP — no max-height cap ── */
+#app {
+  width: 100% !important;
+  max-width: 430px !important;
+  height: 100vh !important;
+  max-height: none !important;
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+/* ── ALL SCROLL AREAS — pad bottom so content clears tab bar ── */
+.screen, #lb-scroll, #log-scroll, #champs-scroll, #coach-scroll {
+  padding-bottom: 100px !important;
+}
+
+/* ── ALL MODALS — sit above tab bar ── */
+.modal-bg, #perfect-screen {
+  z-index: 99999 !important;
+  position: fixed !important;
+  inset: 0 !important;
+}
+
+/* ── PLAYER EDIT MODAL — scrollable, save button always visible ── */
+#player-modal.modal-bg {
+  align-items: flex-start !important;
+  padding: 12px !important;
+  padding-bottom: max(12px, env(safe-area-inset-bottom, 12px)) !important;
+  overflow-y: auto !important;
+}
+#player-modal .modal-card {
+  max-height: calc(100dvh - 24px) !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  transform: none !important;
+  margin: 0 auto !important;
+  padding: 18px 16px 16px !important;
+  width: 100% !important;
+}
+#player-modal .modal-btns {
+  position: sticky !important;
+  bottom: 0 !important;
+  background: var(--cream) !important;
+  padding: 10px 0 4px !important;
+  margin-top: 8px !important;
+  z-index: 2 !important;
+}
+
+/* ── TAB ICON 3D STYLE ── */
+.tab-icon {
+  filter: grayscale(20%) drop-shadow(1px 2px 3px rgba(0,0,0,0.25)) !important;
+  transition: filter 0.2s, transform 0.2s !important;
+}
+.tab.active .tab-icon {
+  filter: drop-shadow(0 3px 6px rgba(200,16,46,0.4)) drop-shadow(1px 2px 2px rgba(0,0,0,0.2)) !important;
+  transform: scale(1.1) translateY(-2px) !important;
+}
+
+/* ── SCROLL CHEVRON ── */
+.scroll-chevron {
+  position: fixed;
+  bottom: 85px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 500;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  animation: chevron-bounce 1.5s ease-in-out infinite;
+  transition: opacity 0.4s;
+}
+.scroll-chevron.hidden { opacity: 0; }
+.scroll-chevron span {
+  display: block;
+  width: 22px; height: 22px;
+  border-right: 3px solid rgba(26,26,26,0.45);
+  border-bottom: 3px solid rgba(26,26,26,0.45);
+  transform: rotate(45deg);
+  margin-top: -10px;
+}
+.scroll-chevron span:first-child { opacity: 0.35; }
+.scroll-chevron span:last-child  { opacity: 0.75; }
+@keyframes chevron-bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50%       { transform: translateX(-50%) translateY(6px); }
+}
+
+.lb-hot-legend{display:flex;align-items:center;gap:10px;padding:6px 14px 10px;}.lb-hot-legend-box{width:18px;height:18px;flex-shrink:0;background:linear-gradient(135deg,#ffb347,#ff5722);border-radius:5px;border:2px solid var(--ink);box-shadow:1px 1px 0 var(--ink);animation:fire-shift 0.8s ease-in-out infinite alternate;}.lb-hot-legend-text{font-size:10px;font-weight:700;letter-spacing:0.8px;color:#bf360c;}
 </style>
 </head>
 <body>
@@ -3072,9 +3186,11 @@ body { font-family:'JetBrains Mono',monospace; background:#1a1a1a;
     </div>
     <div class="day-row" id="day-row"></div>
     <div class="section-divider"><span>THIS WEEK</span></div>
+    <div class="lb-hot-legend"><div class="lb-hot-legend-box"></div><span class="lb-hot-legend-text">HASN'T MISSED A DAY THIS WEEK</span></div>
     <div class="lb-list" id="lb-list"></div>
     <img id="peek-dizzy" class="peek-dizzy" alt="" />
   </div>
+  <div class="scroll-chevron" id="lb-chevron"><span></span><span></span></div>
   <div class="modal-bg" id="lb-modal-bg">
     <div class="modal-card">
       <div class="modal-day" id="modal-day"></div>
@@ -3164,6 +3280,7 @@ body { font-family:'JetBrains Mono',monospace; background:#1a1a1a;
       </div>
     </div>
   </div>
+  <div class="scroll-chevron" id="log-chevron"><span></span><span></span></div>
   <div class="modal-bg" id="confirm-modal">
     <div class="modal-card">
       <div class="modal-title">LOCK IT IN?</div>
@@ -3257,6 +3374,7 @@ body { font-family:'JetBrains Mono',monospace; background:#1a1a1a;
     <div class="rank-list" id="rank-list"></div>
   </div>
 
+  <div class="scroll-chevron" id="champs-chevron"><span></span><span></span></div>
   <button class="wh-btn" id="wh-btn" onclick="toggleWeekHistory()">WEEK HISTORY &#9660;</button>
   <div class="wh-panel" id="wh-panel"><div id="wh-list"></div></div>
   <div style="height:20px;"></div>
@@ -3397,6 +3515,7 @@ body { font-family:'JetBrains Mono',monospace; background:#1a1a1a;
       </div>
     </div>
   </div>
+  <div class="scroll-chevron" id="coach-chevron"><span></span><span></span></div>
   <div class="modal-bg" id="player-modal">
     <div class="modal-card">
       <div class="modal-title" id="player-modal-title">ADD PLAYER</div>
@@ -3517,7 +3636,7 @@ const SFX = (() => {
 // ============================================================
 // SHARED STATE (localStorage-backed)
 // ============================================================
-const TODAY_KEY = 'WED';
+const TODAY_KEY = 'THU';
 const TODAY = TODAY_KEY;
 const WEEK_LABEL = 'WEEK 3';
 const WEEK_RANGE = 'APR 27 – MAY 2';
@@ -3527,19 +3646,19 @@ const DAYS = ['MON','TUE','WED','THU','FRI','SAT'];
 const DEFAULT_PLAYERS = [
   { id:1, name:'Aaron Mills',  initials:'AM', avatarColor:'#fdcb6e', avatarId:0,
     seasonTotal:198, trophies:0, personalBest:15, weeklyBest:98, daysLogged:35,
-    weeklyLog:{MON:12,TUE:9,WED:null,THU:null,FRI:null,SAT:null}, previousRank:5 },
+    weeklyLog:{MON:12,TUE:9,WED:15,THU:null,FRI:null,SAT:null}, previousRank:5 },
   { id:2, name:'Devon Carter', initials:'DC', avatarColor:'#6c5ce7', avatarId:2,
     seasonTotal:265, trophies:2, personalBest:22, weeklyBest:121, daysLogged:42,
-    weeklyLog:{MON:14,TUE:16,WED:null,THU:null,FRI:null,SAT:null}, previousRank:3 },
+    weeklyLog:{MON:14,TUE:16,WED:18,THU:null,FRI:null,SAT:null}, previousRank:3 },
   { id:3, name:'Jake Brown',   initials:'JB', avatarColor:'#e17055', avatarId:3,
     seasonTotal:241, trophies:1, personalBest:19, weeklyBest:112, daysLogged:39,
     weeklyLog:{MON:null,TUE:18,WED:null,THU:null,FRI:null,SAT:null}, previousRank:4 },
   { id:4, name:'Marcus Webb',  initials:'MW', avatarColor:'#e84393', avatarId:0,
     seasonTotal:312, trophies:4, personalBest:25, weeklyBest:134, daysLogged:48,
-    weeklyLog:{MON:23,TUE:21,WED:null,THU:null,FRI:null,SAT:null}, previousRank:1 },
+    weeklyLog:{MON:23,TUE:21,WED:19,THU:null,FRI:null,SAT:null}, previousRank:1 },
   { id:5, name:'Tyrone Davis', initials:'TD', avatarColor:'#00b894', avatarId:1,
     seasonTotal:287, trophies:2, personalBest:23, weeklyBest:128, daysLogged:44,
-    weeklyLog:{MON:19,TUE:22,WED:null,THU:null,FRI:null,SAT:null}, previousRank:2 },
+    weeklyLog:{MON:19,TUE:22,WED:20,THU:null,FRI:null,SAT:null}, previousRank:2 },
 ];
 
 let COACH_PASSCODE = '1234';
@@ -3751,7 +3870,7 @@ function isHotDay(p) {
   const allPriorLogged = daysBefore.every(d => typeof p.weeklyLog[d] === 'number');
   if (!allPriorLogged) return false;
   // At least one day must be logged (not hot if brand new week with nothing yet)
-  const todayLogged = typeof p.weeklyLog[TODAY] === 'number';
+  const todayLogged = typeof p.weeklyLog[getLiveToday()] === 'number';
   return daysBefore.length > 0 || todayLogged;
 }
 
@@ -5053,7 +5172,38 @@ document.addEventListener('DOMContentLoaded', function() {
     SFX.success();_fb.dataset.confirm='';_fb.textContent='START NEW WEEK';_fb.style.background='linear-gradient(180deg,#2980b9,#1a5276)';
     if(_fc){_fc.textContent='NEW WEEK STARTED - LOGS CLEARED';_fc.style.color='#27ae60';setTimeout(function(){_fc.textContent='';_fc.style.color='';},4000);}
     renderAll();
-  });}
+  
+// ── SCROLL CHEVRONS ──
+(function() {
+  var pairs = [
+    {scroll:'lb-scroll',    chevron:'lb-chevron'},
+    {scroll:'log-scroll',   chevron:'log-chevron'},
+    {scroll:'champs-scroll',chevron:'champs-chevron'},
+    {scroll:'coach-scroll', chevron:'coach-chevron'},
+  ];
+  function wireChevron(pair) {
+    var el  = document.getElementById(pair.scroll);
+    var chv = document.getElementById(pair.chevron);
+    if (!el || !chv) return;
+    function check() {
+      chv.classList.toggle('hidden', el.scrollTop + el.clientHeight >= el.scrollHeight - 30);
+    }
+    el.addEventListener('scroll', check, {passive:true});
+    setTimeout(check, 600);
+    setTimeout(check, 2000);
+  }
+  pairs.forEach(wireChevron);
+})();
+});}
+  if (window._NEW_DAY) {
+    var _allSteps = document.querySelectorAll('.step');
+    var _picker = document.getElementById('step-picker');
+    if (_allSteps.length && _picker) {
+      _allSteps.forEach(function(s){ s.classList.remove('active'); });
+      _picker.classList.add('active');
+    }
+  }
+
 });
 
 
