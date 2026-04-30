@@ -3272,6 +3272,30 @@ gba(0,0,0,0.2));
   50%       { transform: translateX(-50%) translateY(6px); }
 }
 
+
+/* ── BOARD HOT LEGEND ── */
+.lb-hot-legend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px 10px;
+  margin: 0 0 4px;
+}
+.lb-hot-legend-box {
+  width: 18px; height: 18px; flex-shrink: 0;
+  background: linear-gradient(135deg, #ffb347, #ff5722);
+  border-radius: 5px;
+  border: 2px solid var(--ink);
+  box-shadow: 1px 1px 0 var(--ink);
+  animation: fire-shift 0.8s ease-in-out infinite alternate;
+}
+.lb-hot-legend-text {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #bf360c;
+}
+
 </style>
 </head>
 <body>
@@ -3309,6 +3333,10 @@ gba(0,0,0,0.2));
     </div>
     <div class="day-row" id="day-row"></div>
     <div class="section-divider"><span>THIS WEEK</span></div>
+    <div class="lb-hot-legend">
+      <div class="lb-hot-legend-box"></div>
+      <span class="lb-hot-legend-text">HASN'T MISSED A DAY THIS WEEK</span>
+    </div>
     <div class="lb-list" id="lb-list"></div>
     <img id="peek-dizzy" class="peek-dizzy" alt="" />
   </div>
