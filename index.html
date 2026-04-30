@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Cyclone FT Club</title>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@500;700&family=Bowlby+One&display=swap" rel="stylesheet">
 <style>
@@ -3031,7 +3031,86 @@ body { font-family:'JetBrains Mono',monospace; background:#1a1a1a;
   height: 130% !important;
   object-fit: contain !important;
   margin-top: 6px;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+  filter: drop-shadow(0 2px 4px r
+/* ── TAB BAR — mobile safe area fix ── */
+.tab-bar {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 100% !important;
+  max-width: 430px !important;
+  background: linear-gradient(180deg, #f0f0f0 0%, var(--white) 40%) !important;
+  border-top: 4px solid var(--ink) !important;
+  box-shadow: 0 -6px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.9) !important;
+  display: flex !important;
+  padding: 10px 6px env(safe-area-inset-bottom, 10px) 6px !important;
+  padding-bottom: max(10px, env(safe-area-inset-bottom)) !important;
+  z-index: 1000 !important;
+}
+
+/* ── APP — no max-height cap, use full screen ── */
+#app {
+  width: 100% !important;
+  max-width: 430px !important;
+  height: 100vh !important;
+  max-height: none !important;
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+/* ── SCREENS — account for fixed tab bar height ── */
+.tab-screen {
+  padding-bottom: 70px !important;
+}
+
+/* ── SCROLL AREAS — ensure content not hidden behind tab bar ── */
+.screen, #lb-scroll, #log-scroll, #champs-scroll, #coach-scroll {
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+gba(0,0,0,0.2));
+}
+
+
+/* ── COACH EDIT PLAYER MODAL — scrollable on small phones ── */
+#player-modal.modal-bg {
+  align-items: flex-start !important;
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+  overflow-y: auto !important;
+}
+#player-modal .modal-card {
+  max-height: calc(100vh - 100px) !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  transform: none !important;
+  margin: auto !important;
+  padding: 20px 18px !important;
+}
+#player-modal .modal-card::-webkit-scrollbar { display: none; }
+/* Ensure save/cancel buttons always visible at bottom */
+#player-modal .modal-btns {
+  position: sticky !important;
+  bottom: 0 !important;
+  background: var(--cream) !important;
+  padding-top: 12px !important;
+  margin-top: 8px !important;
+  z-index: 1 !important;
+}
+/* Tighten up spacing inside modal on mobile */
+#player-modal .modal-field {
+  margin-bottom: 12px !important;
+}
+#player-modal .modal-title {
+  margin-bottom: 14px !important;
+}
+/* Dizzy picker wraps nicely */
+#player-modal .dizzy-picker {
+  max-height: 180px !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
 }
 
 </style>
