@@ -3034,7 +3034,7 @@ body { font-family:'JetBrains Mono',monospace; background:#1a1a1a;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
 }
 
-.wh-btn{display:flex;align-items:center;justify-content:center;width:calc(100% - 28px);margin:12px 14px 4px;padding:13px 16px;background:var(--ink);color:var(--gold-bright);border:none;border-radius:14px;cursor:pointer;font-family:'Anton',sans-serif;font-size:15px;letter-spacing:2px;box-shadow:0 3px 0 rgba(0,0,0,0.4);transition:transform 0.1s;}.wh-btn:active{transform:translateY(2px);}.wh-panel{max-height:0;overflow:hidden;transition:max-height 0.35s ease;margin:0 14px;}.wh-panel.open{max-height:800px;overflow-y:auto;padding-bottom:8px;}.wh-panel::-webkit-scrollbar{display:none;}.wh-entry{background:var(--white);border:2.5px solid var(--ink);border-radius:14px;padding:12px 14px;margin-bottom:10px;box-shadow:2px 2px 0 var(--ink);}.wh-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}.wh-wnum{font-family:'Anton',sans-serif;font-size:13px;color:var(--red-deep);letter-spacing:1px;}.wh-wrange{font-size:9px;font-weight:700;color:var(--gray);letter-spacing:0.6px;}.wh-winner{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,rgba(244,196,48,0.18),rgba(244,196,48,0.04));border:2px solid var(--gold-deep);border-radius:10px;padding:8px 12px;margin-bottom:6px;}.wh-crown{font-size:20px;}.wh-wname{font-family:'Anton',sans-serif;font-size:17px;color:var(--ink);flex:1;}.wh-wmakes{font-family:'Anton',sans-serif;font-size:21px;color:var(--red-deep);}.wh-wmakes small{font-size:9px;font-weight:700;color:var(--gray);}.wh-runners{display:flex;gap:6px;flex-wrap:wrap;}.wh-runner{display:flex;align-items:center;gap:5px;background:rgba(0,0,0,0.04);border:1.5px solid rgba(0,0,0,0.1);border-radius:8px;padding:4px 9px;}.wh-rname{font-size:10px;font-weight:700;color:var(--gray);letter-spacing:0.5px;}.wh-rmakes{font-family:'Anton',sans-serif;font-size:13px;color:var(--ink);}.wh-empty{text-align:center;padding:20px;font-size:11px;font-weight:700;color:var(--gray);letter-spacing:0.8px;line-height:1.8;}
+.wh-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:calc(100% - 28px);margin:8px 14px 6px;padding:9px 14px;background:var(--ink);color:var(--gold-bright);border:none;border-radius:10px;cursor:pointer;font-family:'Anton',sans-serif;font-size:12px;letter-spacing:2px;box-shadow:0 2px 0 rgba(0,0,0,0.35);transition:transform 0.1s;}.wh-btn:active{transform:translateY(1px);}.wh-panel{max-height:0;overflow:hidden;transition:max-height 0.35s ease;margin:0 14px;}.wh-panel.open{max-height:600px;overflow-y:auto;padding-bottom:4px;}.wh-panel.open{max-height:800px;overflow-y:auto;padding-bottom:8px;}.wh-panel::-webkit-scrollbar{display:none;}.wh-entry{background:var(--white);border:2.5px solid var(--ink);border-radius:14px;padding:12px 14px;margin-bottom:10px;box-shadow:2px 2px 0 var(--ink);}.wh-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}.wh-wnum{font-family:'Anton',sans-serif;font-size:13px;color:var(--red-deep);letter-spacing:1px;}.wh-wrange{font-size:9px;font-weight:700;color:var(--gray);letter-spacing:0.6px;}.wh-winner{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,rgba(244,196,48,0.18),rgba(244,196,48,0.04));border:2px solid var(--gold-deep);border-radius:10px;padding:8px 12px;margin-bottom:6px;}.wh-crown{font-size:20px;}.wh-wname{font-family:'Anton',sans-serif;font-size:17px;color:var(--ink);flex:1;}.wh-wmakes{font-family:'Anton',sans-serif;font-size:21px;color:var(--red-deep);}.wh-wmakes small{font-size:9px;font-weight:700;color:var(--gray);}.wh-runners{display:flex;gap:6px;flex-wrap:wrap;}.wh-runner{display:flex;align-items:center;gap:5px;background:rgba(0,0,0,0.04);border:1.5px solid rgba(0,0,0,0.1);border-radius:8px;padding:4px 9px;}.wh-rname{font-size:10px;font-weight:700;color:var(--gray);letter-spacing:0.5px;}.wh-rmakes{font-family:'Anton',sans-serif;font-size:13px;color:var(--ink);}.wh-empty{text-align:center;padding:20px;font-size:11px;font-weight:700;color:var(--gray);letter-spacing:0.8px;line-height:1.8;}
 
 /* ══════════════════════════════════════════════════
    MOBILE FIXES — tab bar, modals, scroll indicators
@@ -3371,13 +3371,13 @@ body { font-family:'JetBrains Mono',monospace; background:#1a1a1a;
       <div class="hot-legend-fire-box"></div>
       <span class="hot-legend-text">HASN'T MISSED A DAY ALL SEASON</span>
     </div>
+    <button class="wh-btn" id="wh-btn" onclick="toggleWeekHistory()">WEEK HISTORY &#9660;</button>
+    <div class="wh-panel" id="wh-panel"><div id="wh-list"></div></div>
     <div class="rank-list" id="rank-list"></div>
   </div>
 
   <div class="scroll-chevron" id="champs-chevron"><span></span><span></span></div>
-  <button class="wh-btn" id="wh-btn" onclick="toggleWeekHistory()">WEEK HISTORY &#9660;</button>
-  <div class="wh-panel" id="wh-panel"><div id="wh-list"></div></div>
-  <div style="height:20px;"></div>
+  <div style="height:8px;"></div>
 
   <div class="modal-bg" id="champs-modal-bg">
     <div class="modal-card">
