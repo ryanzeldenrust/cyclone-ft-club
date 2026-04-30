@@ -3113,6 +3113,35 @@ gba(0,0,0,0.2));
   -webkit-overflow-scrolling: touch !important;
 }
 
+
+/* ── TAB BAR — push up higher for all phones ── */
+.tab-bar {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 100% !important;
+  max-width: 430px !important;
+  background: linear-gradient(180deg, #f0f0f0 0%, var(--white) 40%) !important;
+  border-top: 4px solid var(--ink) !important;
+  box-shadow: 0 -6px 24px rgba(0,0,0,0.25) !important;
+  display: flex !important;
+  z-index: 9999 !important;
+  padding: 8px 6px 8px 6px !important;
+  padding-bottom: max(16px, env(safe-area-inset-bottom, 16px)) !important;
+  margin-bottom: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Push all screen content up so nothing hides behind tab bar */
+.tab-screen {
+  padding-bottom: 90px !important;
+  margin-bottom: 0 !important;
+}
+.screen, #lb-scroll, #log-scroll, #champs-scroll, #coach-scroll {
+  padding-bottom: 100px !important;
+}
+
 </style>
 </head>
 <body>
