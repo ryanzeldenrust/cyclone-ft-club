@@ -3142,6 +3142,98 @@ gba(0,0,0,0.2));
   padding-bottom: 100px !important;
 }
 
+
+/* ══════════════════════════════════════════════════
+   FIX 1: ALL MODALS sit above tab bar (z-index 99999)
+   ══════════════════════════════════════════════════ */
+.modal-bg {
+  z-index: 99999 !important;
+  position: fixed !important;
+  inset: 0 !important;
+}
+#perfect-screen {
+  z-index: 99999 !important;
+  position: fixed !important;
+}
+
+/* Player edit modal: full height, scrollable, above everything */
+#player-modal.modal-bg {
+  align-items: flex-start !important;
+  padding: 12px !important;
+  padding-bottom: max(12px, env(safe-area-inset-bottom, 12px)) !important;
+  overflow-y: auto !important;
+}
+#player-modal .modal-card {
+  max-height: calc(100dvh - 24px) !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  transform: none !important;
+  margin: 0 auto !important;
+  padding: 18px 16px 16px !important;
+  width: 100% !important;
+}
+#player-modal .modal-btns {
+  position: sticky !important;
+  bottom: 0 !important;
+  background: var(--cream) !important;
+  padding: 10px 0 4px !important;
+  margin-top: 8px !important;
+  z-index: 2 !important;
+}
+
+/* ══════════════════════════════════════════════════
+   FIX 2: SCROLL INDICATOR — fade hint at bottom of
+   scrollable areas showing more content below
+   ══════════════════════════════════════════════════ */
+.scroll-wrap {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.scroll-wrap::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 60px;
+  background: linear-gradient(to bottom, transparent, rgba(247,243,236,0.92));
+  pointer-events: none;
+  z-index: 10;
+  transition: opacity 0.3s;
+}
+.scroll-wrap.at-bottom::after {
+  opacity: 0;
+}
+/* Bounce arrow indicator */
+.scroll-hint {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 11;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: scroll-bounce 1.4s ease-in-out infinite;
+  opacity: 0.7;
+  transition: opacity 0.3s;
+}
+.scroll-hint.hidden { opacity: 0; }
+.scroll-hint-arrow {
+  width: 28px; height: 28px;
+  border-right: 3px solid var(--ink);
+  border-bottom: 3px solid var(--ink);
+  transform: rotate(45deg);
+  margin-bottom: -14px;
+}
+.scroll-hint-arrow:nth-child(2) { opacity: 0.5; }
+@keyframes scroll-bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50%       { transform: translateX(-50%) translateY(5px); }
+}
+
 </style>
 </head>
 <body>
@@ -3166,7 +3258,7 @@ gba(0,0,0,0.2));
       </div>
     </div>
   </div>
-  <div class="scrollable-area" id="lb-scroll" style="flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:90px;">
+  <div class="scroll-wrap" id="lb-scroll-wrap"><div class="scroll-hint" id="lb-hint"><div class="scroll-hint-arrow"></div><div class="scroll-hint-arrow"></div></div><div class="scrollable-area" id="lb-scroll" style="flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:90px;">
     <div class="today-bar">
       <div class="today-pill" id="today-pill">
         <span class="pulse"></span>
@@ -3182,6 +3274,7 @@ gba(0,0,0,0.2));
     <div class="lb-list" id="lb-list"></div>
     <img id="peek-dizzy" class="peek-dizzy" alt="" />
   </div>
+</div></div>
   <div class="modal-bg" id="lb-modal-bg">
     <div class="modal-card">
       <div class="modal-day" id="modal-day"></div>
@@ -3311,7 +3404,7 @@ gba(0,0,0,0.2));
       </div>
     </div>
   </div>
-  <div class="screen" id="champs-scroll">
+  <div class="scroll-wrap" id="champs-scroll-wrap"><div class="scroll-hint" id="champs-hint"><div class="scroll-hint-arrow"></div><div class="scroll-hint-arrow"></div></div><div class="screen" id="champs-scroll">
     <div class="champs-banner">
       <div class="champs-banner-title">🏆 SEASON LEADERS 🏆</div>
       <div class="champs-banner-season">OFF-SEASON 2026</div>
@@ -3363,6 +3456,7 @@ gba(0,0,0,0.2));
     </div>
     <div class="rank-list" id="rank-list"></div>
   </div>
+</div></div>
   <div class="modal-bg" id="champs-modal-bg">
     <div class="modal-card">
       <div class="modal-header">
@@ -3399,7 +3493,7 @@ gba(0,0,0,0.2));
       </div>
     </div>
   </div>
-  <div class="screen" id="coach-scroll">
+  <div class="scroll-wrap" id="coach-scroll-wrap"><div class="scroll-hint" id="coach-hint"><div class="scroll-hint-arrow"></div><div class="scroll-hint-arrow"></div></div><div class="screen" id="coach-scroll">
     <div class="view active" id="view-passcode">
       <div class="passcode-wrap">
         <div class="passcode-dizzy"><img id="coach-dizzy" src="" alt="" /></div>
@@ -3497,6 +3591,7 @@ gba(0,0,0,0.2));
       </div>
     </div>
   </div>
+</div></div>
   <div class="modal-bg" id="player-modal">
     <div class="modal-card">
       <div class="modal-title" id="player-modal-title">ADD PLAYER</div>
@@ -5109,6 +5204,30 @@ window.showStep = function(id) {
 
 // Save after every lock-in
 const _origConfirm = document.getElementById('modal-confirm');
+
+// ── SCROLL HINTS ──
+document.addEventListener('DOMContentLoaded', function() {
+  var scrollPairs = [
+    { scroll: 'lb-scroll',     hint: 'lb-hint',     wrap: 'lb-scroll-wrap' },
+    { scroll: 'champs-scroll', hint: 'champs-hint', wrap: 'champs-scroll-wrap' },
+    { scroll: 'coach-scroll',  hint: 'coach-hint',  wrap: 'coach-scroll-wrap' },
+  ];
+  scrollPairs.forEach(function(pair) {
+    var el = document.getElementById(pair.scroll);
+    var hint = document.getElementById(pair.hint);
+    var wrap = document.getElementById(pair.wrap);
+    if (!el || !hint) return;
+    function checkScroll() {
+      var atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 20;
+      hint.classList.toggle('hidden', atBottom);
+      if (wrap) wrap.classList.toggle('at-bottom', atBottom);
+    }
+    el.addEventListener('scroll', checkScroll, {passive: true});
+    // Check after content renders
+    setTimeout(checkScroll, 500);
+    setTimeout(checkScroll, 1500);
+  });
+});
 </script>
 </body>
 </html>
