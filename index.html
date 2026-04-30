@@ -3234,6 +3234,60 @@ gba(0,0,0,0.2));
   50%       { transform: translateX(-50%) translateY(5px); }
 }
 
+
+/* ── SCROLL INDICATOR — pure CSS, no wrapper needed ── */
+.scrollable-area, #champs-scroll, #coach-scroll, #log-scroll {
+  position: relative !important;
+}
+
+/* Fade gradient at bottom of scroll areas */
+#screen-board .scrollable-area::after,
+#screen-champs #champs-scroll::after,
+#screen-coach #coach-scroll::after,
+#screen-log #log-scroll::after {
+  content: '';
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  display: block;
+  background: linear-gradient(to bottom, transparent, rgba(247,243,236,0.9));
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+/* Bouncing chevron on scrollable screens */
+.scroll-chevron {
+  position: fixed;
+  bottom: 85px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 500;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  animation: chevron-bounce 1.5s ease-in-out infinite;
+  transition: opacity 0.4s;
+}
+.scroll-chevron.hidden { opacity: 0; }
+.scroll-chevron span {
+  display: block;
+  width: 22px; height: 22px;
+  border-right: 3px solid rgba(26,26,26,0.5);
+  border-bottom: 3px solid rgba(26,26,26,0.5);
+  transform: rotate(45deg);
+  margin-top: -10px;
+}
+.scroll-chevron span:first-child { opacity: 0.4; }
+.scroll-chevron span:last-child  { opacity: 0.8; }
+@keyframes chevron-bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50%       { transform: translateX(-50%) translateY(6px); }
+}
+
 </style>
 </head>
 <body>
@@ -3258,7 +3312,7 @@ gba(0,0,0,0.2));
       </div>
     </div>
   </div>
-  <div class="scroll-wrap" id="lb-scroll-wrap"><div class="scroll-hint" id="lb-hint"><div class="scroll-hint-arrow"></div><div class="scroll-hint-arrow"></div></div><div class="scrollable-area" id="lb-scroll" style="flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:90px;">
+  <div class="scrollable-area" id="lb-scroll" style="flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:90px;">
     <div class="today-bar">
       <div class="today-pill" id="today-pill">
         <span class="pulse"></span>
@@ -3274,7 +3328,8 @@ gba(0,0,0,0.2));
     <div class="lb-list" id="lb-list"></div>
     <img id="peek-dizzy" class="peek-dizzy" alt="" />
   </div>
-</div></div>
+
+  <div class="scroll-chevron" id="lb-chevron"><span></span><span></span></div>
   <div class="modal-bg" id="lb-modal-bg">
     <div class="modal-card">
       <div class="modal-day" id="modal-day"></div>
@@ -3404,7 +3459,7 @@ gba(0,0,0,0.2));
       </div>
     </div>
   </div>
-  <div class="scroll-wrap" id="champs-scroll-wrap"><div class="scroll-hint" id="champs-hint"><div class="scroll-hint-arrow"></div><div class="scroll-hint-arrow"></div></div><div class="screen" id="champs-scroll">
+  <div class="screen" id="champs-scroll">
     <div class="champs-banner">
       <div class="champs-banner-title">🏆 SEASON LEADERS 🏆</div>
       <div class="champs-banner-season">OFF-SEASON 2026</div>
@@ -3456,7 +3511,8 @@ gba(0,0,0,0.2));
     </div>
     <div class="rank-list" id="rank-list"></div>
   </div>
-</div></div>
+
+  <div class="scroll-chevron" id="champs-chevron"><span></span><span></span></div>
   <div class="modal-bg" id="champs-modal-bg">
     <div class="modal-card">
       <div class="modal-header">
@@ -3493,7 +3549,7 @@ gba(0,0,0,0.2));
       </div>
     </div>
   </div>
-  <div class="scroll-wrap" id="coach-scroll-wrap"><div class="scroll-hint" id="coach-hint"><div class="scroll-hint-arrow"></div><div class="scroll-hint-arrow"></div></div><div class="screen" id="coach-scroll">
+  <div class="screen" id="coach-scroll">
     <div class="view active" id="view-passcode">
       <div class="passcode-wrap">
         <div class="passcode-dizzy"><img id="coach-dizzy" src="" alt="" /></div>
@@ -3591,7 +3647,8 @@ gba(0,0,0,0.2));
       </div>
     </div>
   </div>
-</div></div>
+
+  <div class="scroll-chevron" id="coach-chevron"><span></span><span></span></div>
   <div class="modal-bg" id="player-modal">
     <div class="modal-card">
       <div class="modal-title" id="player-modal-title">ADD PLAYER</div>
@@ -5205,27 +5262,24 @@ window.showStep = function(id) {
 // Save after every lock-in
 const _origConfirm = document.getElementById('modal-confirm');
 
-// ── SCROLL HINTS ──
+// ── SCROLL CHEVRONS ──
 document.addEventListener('DOMContentLoaded', function() {
-  var scrollPairs = [
-    { scroll: 'lb-scroll',     hint: 'lb-hint',     wrap: 'lb-scroll-wrap' },
-    { scroll: 'champs-scroll', hint: 'champs-hint', wrap: 'champs-scroll-wrap' },
-    { scroll: 'coach-scroll',  hint: 'coach-hint',  wrap: 'coach-scroll-wrap' },
+  var pairs = [
+    { scroll: 'lb-scroll',     chevron: 'lb-chevron' },
+    { scroll: 'champs-scroll', chevron: 'champs-chevron' },
+    { scroll: 'coach-scroll',  chevron: 'coach-chevron' },
   ];
-  scrollPairs.forEach(function(pair) {
-    var el = document.getElementById(pair.scroll);
-    var hint = document.getElementById(pair.hint);
-    var wrap = document.getElementById(pair.wrap);
-    if (!el || !hint) return;
-    function checkScroll() {
-      var atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 20;
-      hint.classList.toggle('hidden', atBottom);
-      if (wrap) wrap.classList.toggle('at-bottom', atBottom);
+  pairs.forEach(function(pair) {
+    var el  = document.getElementById(pair.scroll);
+    var chv = document.getElementById(pair.chevron);
+    if (!el || !chv) return;
+    function check() {
+      var atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 30;
+      chv.classList.toggle('hidden', atBottom);
     }
-    el.addEventListener('scroll', checkScroll, {passive: true});
-    // Check after content renders
-    setTimeout(checkScroll, 500);
-    setTimeout(checkScroll, 1500);
+    el.addEventListener('scroll', check, {passive:true});
+    setTimeout(check, 800);
+    setTimeout(check, 2000);
   });
 });
 </script>
