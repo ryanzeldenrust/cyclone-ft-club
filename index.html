@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Cyclone FT Club</title>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@500;700&family=Bowlby+One&display=swap" rel="stylesheet">
 <style>
@@ -3031,271 +3031,10 @@ body { font-family:'JetBrains Mono',monospace; background:#1a1a1a;
   height: 130% !important;
   object-fit: contain !important;
   margin-top: 6px;
-  filter: drop-shadow(0 2px 4px r
-/* ── TAB BAR — mobile safe area fix ── */
-.tab-bar {
-  position: fixed !important;
-  bottom: 0 !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  width: 100% !important;
-  max-width: 430px !important;
-  background: linear-gradient(180deg, #f0f0f0 0%, var(--white) 40%) !important;
-  border-top: 4px solid var(--ink) !important;
-  box-shadow: 0 -6px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.9) !important;
-  display: flex !important;
-  padding: 10px 6px env(safe-area-inset-bottom, 10px) 6px !important;
-  padding-bottom: max(10px, env(safe-area-inset-bottom)) !important;
-  z-index: 1000 !important;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
 }
 
-/* ── APP — no max-height cap, use full screen ── */
-#app {
-  width: 100% !important;
-  max-width: 430px !important;
-  height: 100vh !important;
-  max-height: none !important;
-  position: relative !important;
-  display: flex !important;
-  flex-direction: column !important;
-  overflow: hidden !important;
-}
-
-/* ── SCREENS — account for fixed tab bar height ── */
-.tab-screen {
-  padding-bottom: 70px !important;
-}
-
-/* ── SCROLL AREAS — ensure content not hidden behind tab bar ── */
-.screen, #lb-scroll, #log-scroll, #champs-scroll, #coach-scroll {
-  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
-}
-
-gba(0,0,0,0.2));
-}
-
-
-/* ── COACH EDIT PLAYER MODAL — scrollable on small phones ── */
-#player-modal.modal-bg {
-  align-items: flex-start !important;
-  padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px)) !important;
-  overflow-y: auto !important;
-}
-#player-modal .modal-card {
-  max-height: calc(100vh - 100px) !important;
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch !important;
-  transform: none !important;
-  margin: auto !important;
-  padding: 20px 18px !important;
-}
-#player-modal .modal-card::-webkit-scrollbar { display: none; }
-/* Ensure save/cancel buttons always visible at bottom */
-#player-modal .modal-btns {
-  position: sticky !important;
-  bottom: 0 !important;
-  background: var(--cream) !important;
-  padding-top: 12px !important;
-  margin-top: 8px !important;
-  z-index: 1 !important;
-}
-/* Tighten up spacing inside modal on mobile */
-#player-modal .modal-field {
-  margin-bottom: 12px !important;
-}
-#player-modal .modal-title {
-  margin-bottom: 14px !important;
-}
-/* Dizzy picker wraps nicely */
-#player-modal .dizzy-picker {
-  max-height: 180px !important;
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch !important;
-}
-
-
-/* ── TAB BAR — push up higher for all phones ── */
-.tab-bar {
-  position: fixed !important;
-  bottom: 0 !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  width: 100% !important;
-  max-width: 430px !important;
-  background: linear-gradient(180deg, #f0f0f0 0%, var(--white) 40%) !important;
-  border-top: 4px solid var(--ink) !important;
-  box-shadow: 0 -6px 24px rgba(0,0,0,0.25) !important;
-  display: flex !important;
-  z-index: 9999 !important;
-  padding: 8px 6px 8px 6px !important;
-  padding-bottom: max(16px, env(safe-area-inset-bottom, 16px)) !important;
-  margin-bottom: 0 !important;
-  box-sizing: border-box !important;
-}
-
-/* Push all screen content up so nothing hides behind tab bar */
-.tab-screen {
-  padding-bottom: 90px !important;
-  margin-bottom: 0 !important;
-}
-.screen, #lb-scroll, #log-scroll, #champs-scroll, #coach-scroll {
-  padding-bottom: 100px !important;
-}
-
-
-/* ══════════════════════════════════════════════════
-   FIX 1: ALL MODALS sit above tab bar (z-index 99999)
-   ══════════════════════════════════════════════════ */
-.modal-bg {
-  z-index: 99999 !important;
-  position: fixed !important;
-  inset: 0 !important;
-}
-#perfect-screen {
-  z-index: 99999 !important;
-  position: fixed !important;
-}
-
-/* Player edit modal: full height, scrollable, above everything */
-#player-modal.modal-bg {
-  align-items: flex-start !important;
-  padding: 12px !important;
-  padding-bottom: max(12px, env(safe-area-inset-bottom, 12px)) !important;
-  overflow-y: auto !important;
-}
-#player-modal .modal-card {
-  max-height: calc(100dvh - 24px) !important;
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch !important;
-  transform: none !important;
-  margin: 0 auto !important;
-  padding: 18px 16px 16px !important;
-  width: 100% !important;
-}
-#player-modal .modal-btns {
-  position: sticky !important;
-  bottom: 0 !important;
-  background: var(--cream) !important;
-  padding: 10px 0 4px !important;
-  margin-top: 8px !important;
-  z-index: 2 !important;
-}
-
-/* ══════════════════════════════════════════════════
-   FIX 2: SCROLL INDICATOR — fade hint at bottom of
-   scrollable areas showing more content below
-   ══════════════════════════════════════════════════ */
-.scroll-wrap {
-  position: relative;
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-.scroll-wrap::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 60px;
-  background: linear-gradient(to bottom, transparent, rgba(247,243,236,0.92));
-  pointer-events: none;
-  z-index: 10;
-  transition: opacity 0.3s;
-}
-.scroll-wrap.at-bottom::after {
-  opacity: 0;
-}
-/* Bounce arrow indicator */
-.scroll-hint {
-  position: absolute;
-  bottom: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 11;
-  pointer-events: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  animation: scroll-bounce 1.4s ease-in-out infinite;
-  opacity: 0.7;
-  transition: opacity 0.3s;
-}
-.scroll-hint.hidden { opacity: 0; }
-.scroll-hint-arrow {
-  width: 28px; height: 28px;
-  border-right: 3px solid var(--ink);
-  border-bottom: 3px solid var(--ink);
-  transform: rotate(45deg);
-  margin-bottom: -14px;
-}
-.scroll-hint-arrow:nth-child(2) { opacity: 0.5; }
-@keyframes scroll-bounce {
-  0%, 100% { transform: translateX(-50%) translateY(0); }
-  50%       { transform: translateX(-50%) translateY(5px); }
-}
-
-
-/* ── SCROLL INDICATOR — pure CSS, no wrapper needed ── */
-.scrollable-area, #champs-scroll, #coach-scroll, #log-scroll {
-  position: relative !important;
-}
-/* fade removed - was causing white line */
-
-/* Bouncing chevron on scrollable screens */
-.scroll-chevron {
-  position: fixed;
-  bottom: 85px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 500;
-  pointer-events: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  animation: chevron-bounce 1.5s ease-in-out infinite;
-  transition: opacity 0.4s;
-}
-.scroll-chevron.hidden { opacity: 0; }
-.scroll-chevron span {
-  display: block;
-  width: 22px; height: 22px;
-  border-right: 3px solid rgba(26,26,26,0.5);
-  border-bottom: 3px solid rgba(26,26,26,0.5);
-  transform: rotate(45deg);
-  margin-top: -10px;
-}
-.scroll-chevron span:first-child { opacity: 0.4; }
-.scroll-chevron span:last-child  { opacity: 0.8; }
-@keyframes chevron-bounce {
-  0%, 100% { transform: translateX(-50%) translateY(0); }
-  50%       { transform: translateX(-50%) translateY(6px); }
-}
-
-
-/* ── BOARD HOT LEGEND ── */
-.lb-hot-legend {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 14px 10px;
-  margin: 0 0 4px;
-}
-.lb-hot-legend-box {
-  width: 18px; height: 18px; flex-shrink: 0;
-  background: linear-gradient(135deg, #ffb347, #ff5722);
-  border-radius: 5px;
-  border: 2px solid var(--ink);
-  box-shadow: 1px 1px 0 var(--ink);
-  animation: fire-shift 0.8s ease-in-out infinite alternate;
-}
-.lb-hot-legend-text {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.8px;
-  color: #bf360c;
-}
-
+.wh-btn{display:flex;align-items:center;justify-content:center;width:calc(100% - 28px);margin:12px 14px 4px;padding:13px 16px;background:var(--ink);color:var(--gold-bright);border:none;border-radius:14px;cursor:pointer;font-family:'Anton',sans-serif;font-size:15px;letter-spacing:2px;box-shadow:0 3px 0 rgba(0,0,0,0.4);transition:transform 0.1s;}.wh-btn:active{transform:translateY(2px);}.wh-panel{max-height:0;overflow:hidden;transition:max-height 0.35s ease;margin:0 14px;}.wh-panel.open{max-height:800px;overflow-y:auto;padding-bottom:8px;}.wh-panel::-webkit-scrollbar{display:none;}.wh-entry{background:var(--white);border:2.5px solid var(--ink);border-radius:14px;padding:12px 14px;margin-bottom:10px;box-shadow:2px 2px 0 var(--ink);}.wh-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}.wh-wnum{font-family:'Anton',sans-serif;font-size:13px;color:var(--red-deep);letter-spacing:1px;}.wh-wrange{font-size:9px;font-weight:700;color:var(--gray);letter-spacing:0.6px;}.wh-winner{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,rgba(244,196,48,0.18),rgba(244,196,48,0.04));border:2px solid var(--gold-deep);border-radius:10px;padding:8px 12px;margin-bottom:6px;}.wh-crown{font-size:20px;}.wh-wname{font-family:'Anton',sans-serif;font-size:17px;color:var(--ink);flex:1;}.wh-wmakes{font-family:'Anton',sans-serif;font-size:21px;color:var(--red-deep);}.wh-wmakes small{font-size:9px;font-weight:700;color:var(--gray);}.wh-runners{display:flex;gap:6px;flex-wrap:wrap;}.wh-runner{display:flex;align-items:center;gap:5px;background:rgba(0,0,0,0.04);border:1.5px solid rgba(0,0,0,0.1);border-radius:8px;padding:4px 9px;}.wh-rname{font-size:10px;font-weight:700;color:var(--gray);letter-spacing:0.5px;}.wh-rmakes{font-family:'Anton',sans-serif;font-size:13px;color:var(--ink);}.wh-empty{text-align:center;padding:20px;font-size:11px;font-weight:700;color:var(--gray);letter-spacing:0.8px;line-height:1.8;}
 </style>
 </head>
 <body>
@@ -3333,15 +3072,9 @@ gba(0,0,0,0.2));
     </div>
     <div class="day-row" id="day-row"></div>
     <div class="section-divider"><span>THIS WEEK</span></div>
-    <div class="lb-hot-legend">
-      <div class="lb-hot-legend-box"></div>
-      <span class="lb-hot-legend-text">HASN'T MISSED A DAY THIS WEEK</span>
-    </div>
     <div class="lb-list" id="lb-list"></div>
     <img id="peek-dizzy" class="peek-dizzy" alt="" />
   </div>
-
-  <div class="scroll-chevron" id="lb-chevron"><span></span><span></span></div>
   <div class="modal-bg" id="lb-modal-bg">
     <div class="modal-card">
       <div class="modal-day" id="modal-day"></div>
@@ -3431,7 +3164,6 @@ gba(0,0,0,0.2));
       </div>
     </div>
   </div>
-  <div class="scroll-chevron" id="log-chevron"><span></span><span></span></div>
   <div class="modal-bg" id="confirm-modal">
     <div class="modal-card">
       <div class="modal-title">LOCK IT IN?</div>
@@ -3525,7 +3257,10 @@ gba(0,0,0,0.2));
     <div class="rank-list" id="rank-list"></div>
   </div>
 
-  <div class="scroll-chevron" id="champs-chevron"><span></span><span></span></div>
+  <button class="wh-btn" id="wh-btn" onclick="toggleWeekHistory()">WEEK HISTORY &#9660;</button>
+  <div class="wh-panel" id="wh-panel"><div id="wh-list"></div></div>
+  <div style="height:20px;"></div>
+
   <div class="modal-bg" id="champs-modal-bg">
     <div class="modal-card">
       <div class="modal-header">
@@ -3648,7 +3383,9 @@ gba(0,0,0,0.2));
           <button class="add-player-btn" id="add-player-btn">+ ADD PLAYER</button>
         </div>
       </div>
-      <div class="coach-section" style="margin-bottom:16px;">
+            <div class="coach-section"><div class="section-header"><span class="section-icon">&#128260;</span><span class="section-title">FORCE NEW WEEK</span></div><div class="section-body"><div class="reset-warning" style="color:#1a5276;">USE IF WEEKLY RESET DID NOT TRIGGER. CLEARS WEEKLY LOGS. SEASON TOTALS KEPT.</div><button class="apply-btn" id="force-week-btn" style="background:linear-gradient(180deg,#2980b9,#1a5276);margin-top:10px;">START NEW WEEK</button><div class="correction-confirm" id="force-week-confirm"></div></div></div>
+
+<div class="coach-section" style="margin-bottom:16px;">
         <div class="section-header"><span class="section-icon">⚠️</span><span class="section-title">SEASON RESET</span></div>
         <div class="section-body">
           <div class="reset-warning">THIS WILL CLEAR ALL SHOT LOGS AND TROPHIES.<br>PLAYER ROSTER IS KEPT. TYPE "RESET" TO CONFIRM.</div>
@@ -3660,8 +3397,6 @@ gba(0,0,0,0.2));
       </div>
     </div>
   </div>
-
-  <div class="scroll-chevron" id="coach-chevron"><span></span><span></span></div>
   <div class="modal-bg" id="player-modal">
     <div class="modal-card">
       <div class="modal-title" id="player-modal-title">ADD PLAYER</div>
@@ -3812,6 +3547,7 @@ let attempts = 0;
 let lockedOut = false;
 let PLAYERS;
 let nextPlayerId;
+let WEEK_HISTORY = [];
 
 (function initState() {
   try {
@@ -3856,9 +3592,49 @@ function recomputeSeasonTotal(player) {
   player.daysLogged = (player._baseLogged || 0) + DAYS.filter(d => typeof player.weeklyLog[d] === 'number').length;
 }
 function saveState() {
-  try { localStorage.setItem('cyclone_ft_v1', JSON.stringify({players:PLAYERS,passcode:COACH_PASSCODE})); }
+  try { localStorage.setItem('cyclone_ft_v1', JSON.stringify({players:PLAYERS,passcode:COACH_PASSCODE,weekHistory:WEEK_HISTORY})); }
   catch(e) {}
 }
+// ── WEEK MANAGEMENT & HISTORY ──
+function getCSTDate(){var now=new Date();return new Date(now.toLocaleString('en-US',{timeZone:'America/Chicago'}));}
+function getWeekKey(date){var d=new Date(date);d.setHours(0,0,0,0);d.setDate(d.getDate()+4-(d.getDay()||7));var ys=new Date(d.getFullYear(),0,1);return d.getFullYear()+'-W'+Math.ceil((((d-ys)/86400000)+1)/7);}
+function getDayKey(date){return ['SUN','MON','TUE','WED','THU','FRI','SAT'][date.getDay()];}
+function getWeekDateRange(date){var d=new Date(date),day=d.getDay(),diff=(day===0)?-6:1-day,mon=new Date(d);mon.setDate(d.getDate()+diff);var sat=new Date(mon);sat.setDate(mon.getDate()+5);var M=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];return M[mon.getMonth()]+' '+mon.getDate()+' - '+M[sat.getMonth()]+' '+sat.getDate();}
+function getWeekNumber(date){return Math.max(1,Math.floor((new Date(date)-new Date(2026,0,5))/(7*24*60*60*1000))+1);}
+function getDayLabel(date){var D=['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'],M=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];return D[date.getDay()]+' - '+M[date.getMonth()]+' '+date.getDate();}
+function performWeekRollover(oldKey){
+  var _ws=[...PLAYERS].sort(function(a,b){var am=DAYS.reduce(function(s,d){return s+(typeof a.weeklyLog[d]==='number'?a.weeklyLog[d]:0);},0),bm=DAYS.reduce(function(s,d){return s+(typeof b.weeklyLog[d]==='number'?b.weeklyLog[d]:0);},0);return bm-am;});
+  var _wr=_ws.map(function(p){return {name:p.name,makes:DAYS.reduce(function(s,d){return s+(typeof p.weeklyLog[d]==='number'?p.weeklyLog[d]:0);},0)};}).filter(function(e){return e.makes>0;});
+  if(_wr.length>0){WEEK_HISTORY.unshift({weekNum:window._LIVE_WEEK_NUM||3,weekRange:window._LIVE_WEEK_RANGE||WEEK_RANGE,winner:_wr[0],runners:_wr.slice(1,4)});var _top=_wr[0].makes;PLAYERS.forEach(function(p){var _pm=DAYS.reduce(function(s,d){return s+(typeof p.weeklyLog[d]==='number'?p.weeklyLog[d]:0);},0);if(_pm===_top&&_top>0)p.trophies=(p.trophies||0)+1;});}
+  PLAYERS.forEach(function(p){var wm=DAYS.reduce(function(s,d){return s+(typeof p.weeklyLog[d]==='number'?p.weeklyLog[d]:0);},0);if(wm>(p.weeklyBest||0))p.weeklyBest=wm;p.weeklyLog={MON:null,TUE:null,WED:null,THU:null,FRI:null,SAT:null};p._baseSeason=p.seasonTotal;p._baseLogged=p.daysLogged;});
+  var sorted=[...PLAYERS].sort(function(a,b){return b.seasonTotal-a.seasonTotal;});sorted.forEach(function(p,i){p.previousRank=i+1;});
+  saveState();
+}
+function getLiveToday(){return window._LIVE_TODAY||TODAY;}
+function getLiveWeekLabel(){return 'WEEK '+(window._LIVE_WEEK_NUM||3);}
+function getLiveWeekRange(){return window._LIVE_WEEK_RANGE||WEEK_RANGE;}
+function getLiveDayLabel(){return window._LIVE_DAY_LABEL||TODAY_LABEL;}
+function isSundayLive(){return window._IS_SUNDAY||false;}
+function initWeekState(){
+  var now=getCSTDate(),wk=getWeekKey(now),dow=now.getDay(),stored=null;
+  try{stored=localStorage.getItem('cyclone_week_key');}catch(e){}
+  if(stored&&stored!==wk&&dow>=1){performWeekRollover(stored);}
+  if(dow!==0||!stored){try{localStorage.setItem('cyclone_week_key',wk);}catch(e){}}
+  window._LIVE_TODAY=getDayKey(now);window._LIVE_WEEK_NUM=getWeekNumber(now);window._LIVE_WEEK_RANGE=getWeekDateRange(now);window._LIVE_DAY_LABEL=getDayLabel(now);window._IS_SUNDAY=(dow===0);
+}
+function renderWeekHistory(){
+  var el=document.getElementById('wh-list');if(!el)return;
+  if(!WEEK_HISTORY||WEEK_HISTORY.length===0){el.innerHTML='<div class="wh-empty">NO COMPLETED WEEKS YET!<br>CHECK BACK AFTER YOUR FIRST WEEK.</div>';return;}
+  el.innerHTML=WEEK_HISTORY.map(function(wk){
+    var r=(wk.runners||[]).map(function(rr){return '<div class="wh-runner"><span class="wh-rname">'+rr.name.split(' ')[0].toUpperCase()+'</span><span class="wh-rmakes">'+rr.makes+'</span></div>';}).join('');
+    return '<div class="wh-entry"><div class="wh-hdr"><span class="wh-wnum">WEEK '+wk.weekNum+'</span><span class="wh-wrange">'+wk.weekRange+'</span></div><div class="wh-winner"><span class="wh-crown">&#127942;</span><span class="wh-wname">'+wk.winner.name.toUpperCase()+'</span><span class="wh-wmakes">'+wk.winner.makes+' <small>WK MAKES</small></span></div>'+(r?'<div class="wh-runners">'+r+'</div>':'')+'</div>';
+  }).join('');
+}
+function toggleWeekHistory(){
+  var p=document.getElementById('wh-panel'),b=document.getElementById('wh-btn');if(!p)return;
+  var open=p.classList.toggle('open');if(b)b.textContent=open?'HIDE HISTORY ▲':'WEEK HISTORY ▼';if(open)renderWeekHistory();SFX.pill();
+}
+
 
 // Avatar pool - all full-body Dizzy images except special ones
 const DIZZY_POOL_KEYS = [
@@ -3968,7 +3744,7 @@ function isHotDay(p) {
   // Hot = hasn't missed any day so far this week
   // "So far" = all days BEFORE today are logged + today counts if they've done it
   // A player is hot if every day they COULD have logged is logged (no gaps)
-  const todayIdx = DAYS.indexOf(TODAY);
+  const todayIdx = DAYS.indexOf(getLiveToday());
   if (todayIdx < 0) return false;
   // Days before today must all be logged
   const daysBefore = DAYS.slice(0, todayIdx);
@@ -4089,6 +3865,8 @@ window.ARROW_DOWN_SRC = ARROWS.arrow_down;
 // RENDER DAY ROW
 // ============================================================
 function renderDayRow() {
+  var _wl=document.getElementById('lb-week-label');if(_wl)_wl.textContent=getLiveWeekLabel();var _dr=document.getElementById('date-range-dates');if(_dr)_dr.textContent=getLiveWeekRange();var _tp=document.getElementById('today-pill-text');if(_tp)_tp.textContent=getLiveToday()+' - TODAY';
+
   const row = document.getElementById('day-row');
   // For this demo we'll show the average across all players for each day
   // Or rather: show whether day is locked / today / future
@@ -4105,7 +3883,7 @@ function renderDayRow() {
   }
 
   let html = '';
-  const todayIdx = DAYS.indexOf(TODAY);
+  const todayIdx = DAYS.indexOf(getLiveToday());
   for (let i = 0; i < DAYS.length; i++) {
     const day = DAYS[i];
     const state = dayState[day];
@@ -4157,7 +3935,7 @@ function renderLeaderboard() {
     const total = weeklyTotal(p);
     const isLeader = rank === 1;
     const hot = isHotDay(p);
-    const todayMakes = p.weeklyLog[TODAY];
+    const todayMakes = p.weeklyLog[getLiveToday()];
     const isIn = typeof todayMakes === 'number';
 
     let trophiesHTML = '';
@@ -4542,7 +4320,7 @@ document.getElementById('modal-confirm').addEventListener('click', () => {
   SFX.tab();
   document.getElementById('confirm-modal').classList.remove('show');
   // Save to player's log
-  currentPlayer.weeklyLog[TODAY] = selectedValue;
+  currentPlayer.weeklyLog[getLiveToday()] = selectedValue;
   // Recompute season total from weekly log + base
   const _weekMakes = DAYS.reduce((s, d) => s + (typeof currentPlayer.weeklyLog[d] === 'number' ? currentPlayer.weeklyLog[d] : 0), 0);
   // Only add new week makes to base (avoid double-counting)
@@ -5257,6 +5035,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Sunday rest screen
   (function(){var _e=document.getElementById('sunday-dizzy-img');if(_e)_e.src=DIZZY.sleep;})();
+
+  initWeekState();
+  if(!WEEK_HISTORY||WEEK_HISTORY.length===0){WEEK_HISTORY=[
+    {weekNum:16,weekRange:'APR 20 - APR 25',winner:{name:'Marcus Webb',makes:128},runners:[{name:'Tyrone Davis',makes:119},{name:'Devon Carter',makes:108},{name:'Aaron Mills',makes:91}]},
+    {weekNum:15,weekRange:'APR 13 - APR 18',winner:{name:'Tyrone Davis',makes:134},runners:[{name:'Marcus Webb',makes:131},{name:'Devon Carter',makes:115},{name:'Jake Brown',makes:102}]},
+    {weekNum:14,weekRange:'APR 6 - APR 11', winner:{name:'Marcus Webb',makes:142},runners:[{name:'Devon Carter',makes:121},{name:'Tyrone Davis',makes:118}]},
+  ];}
+  var _wl2=document.getElementById('lb-week-label');if(_wl2)_wl2.textContent=getLiveWeekLabel();
+  var _dl=document.getElementById('log-date-label');if(_dl)_dl.textContent=getLiveDayLabel();
+  var _fb=document.getElementById('force-week-btn');
+  if(_fb){_fb.addEventListener('click',function(){
+    var _fc=document.getElementById('force-week-confirm');
+    if(_fb.dataset.confirm!=='yes'){_fb.dataset.confirm='yes';_fb.textContent='TAP AGAIN TO CONFIRM';_fb.style.background='linear-gradient(180deg,#e67e22,#ca6f1e)';if(_fc)_fc.textContent='THIS WILL CLEAR ALL WEEKLY LOGS.';setTimeout(function(){_fb.dataset.confirm='';_fb.textContent='START NEW WEEK';_fb.style.background='linear-gradient(180deg,#2980b9,#1a5276)';if(_fc)_fc.textContent='';},4000);return;}
+    performWeekRollover(getWeekKey(getCSTDate()));try{localStorage.setItem('cyclone_week_key',getWeekKey(getCSTDate()));}catch(e){}
+    window._LIVE_TODAY=getDayKey(getCSTDate());window._LIVE_WEEK_NUM=getWeekNumber(getCSTDate());window._LIVE_WEEK_RANGE=getWeekDateRange(getCSTDate());
+    SFX.success();_fb.dataset.confirm='';_fb.textContent='START NEW WEEK';_fb.style.background='linear-gradient(180deg,#2980b9,#1a5276)';
+    if(_fc){_fc.textContent='NEW WEEK STARTED - LOGS CLEARED';_fc.style.color='#27ae60';setTimeout(function(){_fc.textContent='';_fc.style.color='';},4000);}
+    renderAll();
+  });}
 });
 
 
@@ -5264,7 +5061,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Sunday rest check for log screen
 const _origShowStep = showStep;
 window.showStep = function(id) {
-  const isSunday = new Date().getDay() === 0;
+  const isSunday = isSundayLive();
   if (id === 'step-picker' && isSunday) {
     _origShowStep('step-sunday');
     return;
@@ -5274,28 +5071,6 @@ window.showStep = function(id) {
 
 // Save after every lock-in
 const _origConfirm = document.getElementById('modal-confirm');
-
-// ── SCROLL CHEVRONS ──
-document.addEventListener('DOMContentLoaded', function() {
-  var pairs = [
-    { scroll: 'lb-scroll',     chevron: 'lb-chevron' },
-    { scroll: 'log-scroll',    chevron: 'log-chevron' },
-    { scroll: 'champs-scroll', chevron: 'champs-chevron' },
-    { scroll: 'coach-scroll',  chevron: 'coach-chevron' },
-  ];
-  pairs.forEach(function(pair) {
-    var el  = document.getElementById(pair.scroll);
-    var chv = document.getElementById(pair.chevron);
-    if (!el || !chv) return;
-    function check() {
-      var atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 30;
-      chv.classList.toggle('hidden', atBottom);
-    }
-    el.addEventListener('scroll', check, {passive:true});
-    setTimeout(check, 800);
-    setTimeout(check, 2000);
-  });
-});
 </script>
 </body>
 </html>
