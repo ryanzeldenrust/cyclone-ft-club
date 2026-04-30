@@ -3239,23 +3239,7 @@ gba(0,0,0,0.2));
 .scrollable-area, #champs-scroll, #coach-scroll, #log-scroll {
   position: relative !important;
 }
-
-/* Fade gradient at bottom of scroll areas */
-#screen-board .scrollable-area::after,
-#screen-champs #champs-scroll::after,
-#screen-coach #coach-scroll::after,
-#screen-log #log-scroll::after {
-  content: '';
-  position: sticky;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 50px;
-  display: block;
-  background: linear-gradient(to bottom, transparent, rgba(247,243,236,0.9));
-  pointer-events: none;
-  flex-shrink: 0;
-}
+/* fade removed - was causing white line */
 
 /* Bouncing chevron on scrollable screens */
 .scroll-chevron {
@@ -3419,6 +3403,7 @@ gba(0,0,0,0.2));
       </div>
     </div>
   </div>
+  <div class="scroll-chevron" id="log-chevron"><span></span><span></span></div>
   <div class="modal-bg" id="confirm-modal">
     <div class="modal-card">
       <div class="modal-title">LOCK IT IN?</div>
@@ -5266,6 +5251,7 @@ const _origConfirm = document.getElementById('modal-confirm');
 document.addEventListener('DOMContentLoaded', function() {
   var pairs = [
     { scroll: 'lb-scroll',     chevron: 'lb-chevron' },
+    { scroll: 'log-scroll',    chevron: 'log-chevron' },
     { scroll: 'champs-scroll', chevron: 'champs-chevron' },
     { scroll: 'coach-scroll',  chevron: 'coach-chevron' },
   ];
