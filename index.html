@@ -3149,6 +3149,88 @@ body { font-family:'JetBrains Mono',monospace; background:#1a1a1a;
 }
 
 .lb-hot-legend{display:flex;align-items:center;gap:10px;padding:6px 14px 10px;}.lb-hot-legend-box{width:18px;height:18px;flex-shrink:0;background:linear-gradient(135deg,#ffb347,#ff5722);border-radius:5px;border:2px solid var(--ink);box-shadow:1px 1px 0 var(--ink);animation:fire-shift 0.8s ease-in-out infinite alternate;}.lb-hot-legend-text{font-size:10px;font-weight:700;letter-spacing:0.8px;color:#bf360c;}
+
+/* ── USER GUIDE ── */
+.guide-btn {
+  position: absolute; top: 12px; right: 12px;
+  width: 30px; height: 30px;
+  background: rgba(255,255,255,0.2);
+  border: 2px solid rgba(255,255,255,0.5);
+  border-radius: 50%;
+  color: var(--white);
+  font-family: 'Anton', sans-serif;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  transition: background 0.15s;
+}
+.guide-btn:active { background: rgba(255,255,255,0.35); }
+
+.guide-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 99999;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.guide-overlay.show { display: flex; }
+.guide-card {
+  background: var(--cream);
+  border-radius: 20px 20px 0 0;
+  border: 3px solid var(--ink);
+  border-bottom: none;
+  width: 100%;
+  max-width: 430px;
+  padding: 20px 20px 32px;
+  box-shadow: 0 -6px 24px rgba(0,0,0,0.3);
+}
+.guide-title {
+  font-family: 'Anton', sans-serif;
+  font-size: 20px; letter-spacing: 2px;
+  color: var(--ink); text-align: center;
+  margin-bottom: 16px;
+}
+.guide-item {
+  display: flex; align-items: flex-start;
+  gap: 12px; padding: 12px 0;
+  border-bottom: 1.5px solid rgba(0,0,0,0.08);
+}
+.guide-item:last-child { border-bottom: none; }
+.guide-emoji { font-size: 24px; flex-shrink: 0; margin-top: 1px; }
+.guide-text { font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.5; letter-spacing: 0.2px; }
+.guide-text strong { color: var(--red-deep); }
+.guide-close {
+  display: block; width: 100%; margin-top: 16px;
+  padding: 13px; background: var(--ink); color: var(--white);
+  border: none; border-radius: 12px; cursor: pointer;
+  font-family: 'Anton', sans-serif; font-size: 15px; letter-spacing: 2px;
+  box-shadow: 0 3px 0 rgba(0,0,0,0.3);
+}
+
+
+/* ── GUIDE BUTTON — fixed position, always visible ── */
+#guide-floating-btn {
+  position: fixed;
+  top: 14px; right: 14px;
+  width: 32px; height: 32px;
+  background: rgba(255,255,255,0.18);
+  border: 2px solid rgba(255,255,255,0.45);
+  border-radius: 50%;
+  color: var(--white);
+  font-family: 'Anton', sans-serif;
+  font-size: 17px; line-height: 1;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 8000;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  transition: background 0.15s;
+}
+#guide-floating-btn:active { background: rgba(255,255,255,0.35); }
+
 </style>
 </head>
 <body>
@@ -3536,6 +3618,10 @@ body { font-family:'JetBrains Mono',monospace; background:#1a1a1a;
 </div>
 
 <!-- SHARED TAB BAR -->
+<!-- USER GUIDE -->
+<button id="guide-floating-btn" onclick="showGuide()">?</button>
+<div id="guide-overlay" onclick="hideGuide()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:99999;align-items:flex-end;justify-content:center;"><div onclick="event.stopPropagation()" style="background:var(--cream);border-radius:20px 20px 0 0;border:3px solid var(--ink);border-bottom:none;width:100%;max-width:430px;padding:20px 20px 32px;box-shadow:0 -6px 24px rgba(0,0,0,0.3);"><div style="font-family:'Anton',sans-serif;font-size:20px;letter-spacing:2px;color:var(--ink);text-align:center;margin-bottom:16px;">HOW TO USE</div><div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1.5px solid rgba(0,0,0,0.08);"><span style="font-size:24px;flex-shrink:0;">&#127936;</span><span style="font-size:13px;font-weight:600;color:var(--ink);line-height:1.5;"><strong style="color:var(--red-deep);">LOGGING SHOTS</strong><br>Tap LOG, find your name, spin the drum to reflect how many shots you made out of 25, then lock it in.</span></div><div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1.5px solid rgba(0,0,0,0.08);"><span style="font-size:24px;flex-shrink:0;">&#128293;</span><span style="font-size:13px;font-weight:600;color:var(--ink);line-height:1.5;"><strong style="color:var(--red-deep);">FIRE ROWS</strong><br>You haven't missed a day this week — keep it going!</span></div><div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1.5px solid rgba(0,0,0,0.08);"><span style="font-size:24px;flex-shrink:0;">&#127942;</span><span style="font-size:13px;font-weight:600;color:var(--ink);line-height:1.5;"><strong style="color:var(--red-deep);">CHAMPS SCREEN</strong><br>Season leaders and weekly history — see who won each week.</span></div><div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;"><span style="font-size:24px;flex-shrink:0;">&#128197;</span><span style="font-size:13px;font-weight:600;color:var(--ink);line-height:1.5;"><strong style="color:var(--red-deep);">SUNDAY</strong><br>Rest day — enjoy the standings. Board resets Monday morning.</span></div><button onclick="hideGuide()" style="display:block;width:100%;margin-top:16px;padding:13px;background:var(--ink);color:var(--white);border:none;border-radius:12px;cursor:pointer;font-family:'Anton',sans-serif;font-size:15px;letter-spacing:2px;box-shadow:0 3px 0 rgba(0,0,0,0.3);">GOT IT &#10003;</button></div></div>
+
 <div class="tab-bar">
   <div class="tab active" data-tab="board" onclick="switchTab('board')">
     <img class="tab-icon" id="tab-icon-board" alt=""/><div class="tab-label">BOARD</div>
@@ -3710,6 +3796,10 @@ function recomputeSeasonTotal(player) {
   // Update daysLogged from weeklyLog
   player.daysLogged = (player._baseLogged || 0) + DAYS.filter(d => typeof player.weeklyLog[d] === 'number').length;
 }
+
+function showGuide() { var g=document.getElementById('guide-overlay'); if(g){g.style.display='flex';} SFX.pill(); }
+function hideGuide() { var g=document.getElementById('guide-overlay'); if(g){g.style.display='none';} }
+
 function saveState() {
   try { localStorage.setItem('cyclone_ft_v1', JSON.stringify({players:PLAYERS,passcode:COACH_PASSCODE,weekHistory:WEEK_HISTORY})); }
   catch(e) {}
