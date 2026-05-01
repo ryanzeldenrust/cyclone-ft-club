@@ -3231,6 +3231,37 @@ body { font-family:'JetBrains Mono',monospace; background:#1a1a1a;
 }
 #guide-floating-btn:active { background: rgba(255,255,255,0.35); }
 
+
+/* ── CHAMPS MODAL EXTRAS ── */
+.modal-stats-grid {
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 8px !important;
+}
+.modal-graph-wrap {
+  margin: 12px 0 8px;
+  background: rgba(0,0,0,0.04);
+  border: 1.5px solid rgba(0,0,0,0.1);
+  border-radius: 12px;
+  padding: 10px 12px 8px;
+}
+.modal-graph-title {
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 1.5px; color: var(--gray);
+  margin-bottom: 8px; text-align: center;
+}
+.modal-graph-canvas {
+  width: 100%; height: auto;
+  display: block;
+}
+.modal-graph-labels {
+  display: flex; justify-content: space-between;
+  margin-top: 4px;
+}
+.modal-graph-label {
+  font-size: 8px; font-weight: 700;
+  color: var(--gray); letter-spacing: 0.5px;
+}
+
 </style>
 </head>
 <body>
@@ -3472,8 +3503,15 @@ body { font-family:'JetBrains Mono',monospace; background:#1a1a1a;
       </div>
       <div class="modal-stats-grid">
         <div class="modal-stat"><div class="modal-stat-val" id="champs-modal-total"></div><div class="modal-stat-label">SEASON MAKES</div></div>
+        <div class="modal-stat"><div class="modal-stat-val" id="champs-modal-attempts"></div><div class="modal-stat-label">SHOTS TAKEN</div></div>
+        <div class="modal-stat"><div class="modal-stat-val" id="champs-modal-pct"></div><div class="modal-stat-label">FT %</div></div>
         <div class="modal-stat"><div class="modal-stat-val" id="champs-modal-week"></div><div class="modal-stat-label">BEST WEEK</div></div>
         <div class="modal-stat"><div class="modal-stat-val" id="champs-modal-pr"></div><div class="modal-stat-label">DAILY PR</div></div>
+      </div>
+      <div class="modal-graph-wrap">
+        <div class="modal-graph-title">SEASON PROGRESS</div>
+        <canvas id="champs-modal-graph" class="modal-graph-canvas" width="280" height="100"></canvas>
+        <div class="modal-graph-labels" id="champs-modal-graph-labels"></div>
       </div>
       <div class="modal-socks-row">
         <div class="modal-socks-label">🧦 TROPHIES</div>
@@ -4735,6 +4773,100 @@ function renderRankList() {
 }
 
 // ── PLAYER DETAIL MODAL ──
+
+// ── SEASON PROGRESS GRAPH ──
+function drawSeasonGraph(p) {
+  var canvas = document.getElementById('champs-modal-graph');
+  var labelsEl = document.getElementById('champs-modal-graph-labels');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  // Build data points from week history + current week
+  var points = [];
+  var labels = [];
+
+  // Past weeks from history (oldest first)
+  var hist = [...(WEEK_HISTORY || [])].reverse();
+  hist.forEach(function(wk) {
+    var entry = (wk.runners||[]).concat([wk.winner]).find(function(r){ return r.name === p.name; });
+    if (!entry) entry = {name:p.name, makes:0};
+    // Find this player's entry
+    var playerEntry = wk.winner.name === p.name ? wk.winner : (wk.runners||[]).find(function(r){return r.name===p.name;});
+    points.push(playerEntry ? playerEntry.makes : 0);
+    labels.push('WK'+wk.weekNum);
+  });
+
+  // Current week
+  var curMakes = DAYS.reduce(function(s,d){ return s+(typeof p.weeklyLog[d]==='number'?p.weeklyLog[d]:0); }, 0);
+  points.push(curMakes);
+  labels.push('NOW');
+
+  if (points.length < 2) {
+    // Not enough data — show placeholder message
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.font = '600 10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('MORE DATA AFTER FIRST WEEK', W/2, H/2);
+    if (labelsEl) labelsEl.innerHTML = '';
+    return;
+  }
+
+  var maxVal = Math.max.apply(null, points.concat([1]));
+  var pad = 8;
+  var plotW = W - pad*2;
+  var plotH = H - pad*2;
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+  ctx.lineWidth = 1;
+  for (var g = 0; g <= 4; g++) {
+    var gy = pad + (plotH * g / 4);
+    ctx.beginPath(); ctx.moveTo(pad, gy); ctx.lineTo(W-pad, gy); ctx.stroke();
+  }
+
+  // Line
+  ctx.strokeStyle = '#c8102e';
+  ctx.lineWidth = 2.5;
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  points.forEach(function(val, i) {
+    var x = pad + (i / (points.length-1)) * plotW;
+    var y = pad + plotH - (val / maxVal) * plotH;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Fill under line
+  var lastX = pad + plotW, lastY = pad + plotH - (points[points.length-1]/maxVal)*plotH;
+  var firstX = pad, firstY = pad + plotH - (points[0]/maxVal)*plotH;
+  ctx.lineTo(lastX, H-pad);
+  ctx.lineTo(firstX, H-pad);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(200,16,46,0.1)';
+  ctx.fill();
+
+  // Dots
+  points.forEach(function(val, i) {
+    var x = pad + (i / (points.length-1)) * plotW;
+    var y = pad + plotH - (val / maxVal) * plotH;
+    ctx.beginPath();
+    ctx.arc(x, y, 3.5, 0, Math.PI*2);
+    ctx.fillStyle = i === points.length-1 ? '#f4c430' : '#c8102e';
+    ctx.strokeStyle = '#1a1a1a';
+    ctx.lineWidth = 1.5;
+    ctx.fill(); ctx.stroke();
+  });
+
+  // Labels
+  if (labelsEl) {
+    labelsEl.innerHTML = labels.map(function(l) {
+      return '<span class="modal-graph-label">'+l+'</span>';
+    }).join('');
+  }
+}
+
 function showModal(p, rank) {
   const ordinals = ['','1ST','2ND','3RD','4TH','5TH','6TH','7TH','8TH','9TH','10TH'];
   const modalAv = document.getElementById('champs-modal-avatar');
@@ -4749,8 +4881,16 @@ function showModal(p, rank) {
   document.getElementById('champs-modal-name').textContent = p.name.toUpperCase();
   document.getElementById('champs-modal-rank').textContent = `${ordinals[rank] || rank+'TH'} PLACE — SEASON`;
   document.getElementById('champs-modal-total').textContent = p.seasonTotal;
-  document.getElementById('champs-modal-week').textContent = p.weeklyBest;
-  document.getElementById('champs-modal-pr').textContent = p.personalBest;
+  document.getElementById('champs-modal-week').textContent = p.weeklyBest || 0;
+  document.getElementById('champs-modal-pr').textContent = p.personalBest || 0;
+  // Shots taken = daysLogged * 25
+  var _attempts = (p.daysLogged || 0) * 25;
+  document.getElementById('champs-modal-attempts').textContent = _attempts;
+  // FT %
+  var _pct = _attempts > 0 ? Math.round((p.seasonTotal / _attempts) * 100) : 0;
+  document.getElementById('champs-modal-pct').textContent = _pct + '%';
+  // Draw season progress graph
+  drawSeasonGraph(p);
   const socksEl = document.getElementById('champs-modal-socks');
   socksEl.innerHTML = p.trophies > 0
     ? sockIcons(p.trophies, 20)
