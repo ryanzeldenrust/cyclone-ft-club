@@ -3938,6 +3938,11 @@ async function dbClearWeeklyLogs(weekKey) {
   try { await sb.del('weekly_logs','week_key=eq.'+weekKey); } catch(e) { console.error('dbClearWeeklyLogs:', e); }
 }
 
+async function dbClearSeasonData() {
+  try { await sb.del('weekly_logs','id=not.is.null'); } catch(e) { console.error('dbClearSeasonData weekly_logs:', e); throw e; }
+  try { await sb.del('week_history','id=not.is.null'); } catch(e) { console.error('dbClearSeasonData week_history:', e); throw e; }
+}
+
 async function dbSaveSetting(key, value) {
   try { await sb.upsert('app_settings',{key:key,value:value}); } catch(e) { console.error('dbSaveSetting:', e); }
 }
@@ -4041,11 +4046,12 @@ const SFX = (() => {
 // ============================================================
 // SHARED STATE (localStorage-backed)
 // ============================================================
-const TODAY_KEY = 'THU';
+const BOOT_CST_DATE = new Date(new Date().toLocaleString('en-US', {timeZone:'America/Chicago'}));
+const TODAY_KEY = ['SUN','MON','TUE','WED','THU','FRI','SAT'][BOOT_CST_DATE.getDay()];
 const TODAY = TODAY_KEY;
-const WEEK_LABEL = 'WEEK 3';
-const WEEK_RANGE = 'APR 27 – MAY 2';
-const TODAY_LABEL = 'WEDNESDAY · APR 30';
+const WEEK_LABEL = 'WEEK 1';
+const WEEK_RANGE = '';
+const TODAY_LABEL = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'][BOOT_CST_DATE.getDay()] + ' - ' + ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][BOOT_CST_DATE.getMonth()] + ' ' + BOOT_CST_DATE.getDate();
 const DAYS = ['MON','TUE','WED','THU','FRI','SAT'];
 
 const DEFAULT_PLAYERS = [
@@ -5713,18 +5719,34 @@ resetInput.addEventListener('input', () => {
   const armed = resetInput.value.trim().toUpperCase() === 'RESET';
   resetBtn.classList.toggle('armed', armed);
 });
-resetBtn.addEventListener('click', () => {
+resetBtn.addEventListener('click', async () => {
   if (resetInput.value.trim().toUpperCase() !== 'RESET') return;
-  PLAYERS.forEach(p => {
-    p.seasonTotal = 0; p.trophies = 0; p.personalBest = 0;
-    p.weeklyBest = 0; p.daysLogged = 0;
-    p.weeklyLog = {MON:null,TUE:null,WED:null,THU:null,FRI:null,SAT:null};
-  });
-  resetInput.value = '';
-  resetBtn.classList.remove('armed');
-  SFX.success();
-  renderAll();
-  alert('SEASON RESET. ALL LOGS AND TROPHIES CLEARED.');
+  resetBtn.disabled = true;
+  resetBtn.textContent = 'RESETTING...';
+  try {
+    PLAYERS.forEach(p => {
+      p.seasonTotal = 0; p.trophies = 0; p.personalBest = 0;
+      p.weeklyBest = 0; p.daysLogged = 0; p.previousRank = 0;
+      p._baseSeason = 0; p._baseLogged = 0;
+      p.weeklyLog = {MON:null,TUE:null,WED:null,THU:null,FRI:null,SAT:null};
+    });
+    WEEK_HISTORY = [];
+    await dbClearSeasonData();
+    await dbSaveAllPlayers();
+    await dbLoadAll();
+    resetInput.value = '';
+    resetBtn.classList.remove('armed');
+    SFX.success();
+    saveState();
+    renderAll();
+    alert('SEASON RESET. ALL LOGS, HISTORY, STATS, AND TROPHIES CLEARED.');
+  } catch(e) {
+    console.error('Season reset failed:', e);
+    alert('SEASON RESET DID NOT SAVE. CHECK CONNECTION AND TRY AGAIN.');
+  } finally {
+    resetBtn.disabled = false;
+    resetBtn.textContent = 'RESET SEASON';
+  }
 });
 
 // ── PLAYER SEARCH ──
@@ -5899,6 +5921,9 @@ document.addEventListener('DOMContentLoaded', async function() {
   (function(){var _e_done_shot_img=document.getElementById('done-shot-img');if(_e_done_shot_img){_e_done_shot_img.src=LOG_ASSETS.made_shot;}})();
   (function(){var _e_perfect_dizzy_img=document.getElementById('perfect-dizzy-img');if(_e_perfect_dizzy_img){_e_perfect_dizzy_img.src=DIZZY.onfire;}})();
 
+  // Establish live CST day/week before rendering any screen
+  initWeekState();
+
   // Boot board tab
   buildDrum();
   renderDayRow();
@@ -5906,8 +5931,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   // Sunday rest screen
   (function(){var _e=document.getElementById('sunday-dizzy-img');if(_e)_e.src=DIZZY.sleep;})();
-
-  initWeekState();
   // Week history from Supabase
   var _wl2=document.getElementById('lb-week-label');if(_wl2)_wl2.textContent=getLiveWeekLabel();
   var _dl=document.getElementById('log-date-label');if(_dl)_dl.textContent=getLiveDayLabel();
