@@ -3910,7 +3910,13 @@ async function dbAddPlayer(p) {
 }
 
 async function dbDeletePlayer(pid) {
-  try { await sb.del('players','id=eq.'+pid); } catch(e) { console.error('dbDeletePlayer:', e); }
+  try {
+    await sb.del('players','id=eq.'+pid);
+    return true;
+  } catch(e) {
+    console.error('dbDeletePlayer:', e);
+    return false;
+  }
 }
 
 async function dbSaveWeekHistory(entry) {
@@ -5679,11 +5685,18 @@ document.getElementById('del-cancel').addEventListener('click', () => {
   document.getElementById('del-modal').classList.remove('show');
 });
 
-document.getElementById('del-confirm').addEventListener('click', () => {
-  const idx = PLAYERS.findIndex(p => p.id === deleteTargetId);
-  if (idx > -1) PLAYERS.splice(idx, 1);
+document.getElementById('del-confirm').addEventListener('click', async () => {
+  if (!deleteTargetId) return;
+  const ok = await dbDeletePlayer(deleteTargetId);
+  if (!ok) {
+    alert('PLAYER DELETE DID NOT SAVE. CHECK CONNECTION AND TRY AGAIN.');
+    return;
+  }
+  await dbLoadAll();
   SFX.dismiss();
   document.getElementById('del-modal').classList.remove('show');
+  deleteTargetId = null;
+  saveState();
   renderAll();
 });
 
