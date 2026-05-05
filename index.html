@@ -71,15 +71,6 @@ body { font-family:'JetBrains Mono',monospace; display:flex; align-items:center;
   border:1px solid var(--ink);
 }
 
-/* Demo banner */
-.demo-banner {
-  position:fixed; top:0; left:50%; transform:translateX(-50%);
-  background:var(--ink); color:var(--gold-bright);
-  font-family:'Anton',sans-serif; font-size:10px; letter-spacing:2px;
-  padding:4px 16px; border-radius:0 0 8px 8px; z-index:999;
-  border:2px solid var(--gold); border-top:0;
-}
-
 /* ============================================================
    LEADERBOARD CSS
    ============================================================ */
@@ -1037,23 +1028,6 @@ html, body {
   box-shadow: 1.5px 1.5px 0 var(--ink);
   margin-left: 6px;
   vertical-align: middle;
-}
-
-/* Demo banner */
-.demo-banner {
-  position: fixed;
-  top: 0; left: 50%;
-  transform: translateX(-50%);
-  background: var(--ink);
-  color: var(--gold-bright);
-  font-family: 'Anton', sans-serif;
-  font-size: 10px;
-  letter-spacing: 2px;
-  padding: 4px 16px;
-  border-radius: 0 0 8px 8px;
-  z-index: 999;
-  border: 2px solid var(--gold);
-  border-top: 0;
 }
 
 /* ============================================================
@@ -3266,8 +3240,6 @@ body { font-family:'JetBrains Mono',monospace; background:#1a1a1a;
 </head>
 <body>
 <div id="app">
-<div class="demo-banner">DEMO MODE · CYCLONE FT CLUB</div>
-
 <!-- ============================================================
      BOARD SCREEN
      ============================================================ -->
@@ -4559,8 +4531,9 @@ function showStep(id) {
 function renderPlayerList() {
   const list = document.getElementById('player-list');
   list.innerHTML = '';
+  const todayKey = getLiveToday();
   PLAYERS.forEach(p => {
-    const logVal = p.weeklyLog[TODAY];
+    const logVal = p.weeklyLog[todayKey];
     const alreadyLogged = typeof logVal === 'number';
     const missed = logVal === 'MISSED';
     const btn = document.createElement('div');
@@ -4588,6 +4561,12 @@ function renderPlayerList() {
 
 // ── SELECT PLAYER → STEP 2 ──
 function selectPlayer(p) {
+  const todayKey = getLiveToday();
+  const logVal = p.weeklyLog[todayKey];
+  if (typeof logVal === 'number' || logVal === 'MISSED') {
+    showAlreadyLogged(p, logVal);
+    return;
+  }
   currentPlayer = p;
   document.getElementById('log-avatar').style.background = p.avatarColor;
   document.getElementById('log-avatar').textContent = p.initials;
@@ -4718,6 +4697,15 @@ drumWrap.addEventListener('wheel', e => {
 
 // ── LOCK IT IN ──
 document.getElementById('lock-btn').addEventListener('click', () => {
+  if (!currentPlayer) return;
+  const latestPlayer = PLAYERS.find(p => p.id === currentPlayer.id);
+  if (latestPlayer) currentPlayer = latestPlayer;
+  const todayKey = getLiveToday();
+  const logVal = currentPlayer.weeklyLog[todayKey];
+  if (typeof logVal === 'number' || logVal === 'MISSED') {
+    showAlreadyLogged(currentPlayer, logVal);
+    return;
+  }
   SFX.row();
   document.getElementById('modal-num').textContent = selectedValue;
   document.getElementById('modal-player').textContent = currentPlayer.name.toUpperCase();
@@ -4730,8 +4718,18 @@ document.getElementById('modal-cancel').addEventListener('click', () => {
 document.getElementById('modal-confirm').addEventListener('click', () => {
   SFX.tab();
   document.getElementById('confirm-modal').classList.remove('show');
+  if (!currentPlayer) return;
+  const latestPlayer = PLAYERS.find(p => p.id === currentPlayer.id);
+  if (latestPlayer) currentPlayer = latestPlayer;
+  const todayKey = getLiveToday();
+  const existingLog = currentPlayer.weeklyLog[todayKey];
+  if (typeof existingLog === 'number' || existingLog === 'MISSED') {
+    renderPlayerList();
+    showAlreadyLogged(currentPlayer, existingLog);
+    return;
+  }
   // Save to player's log
-  currentPlayer.weeklyLog[getLiveToday()] = selectedValue;
+  currentPlayer.weeklyLog[todayKey] = selectedValue;
   // Recompute season total from weekly log + base
   const _weekMakes = DAYS.reduce((s, d) => s + (typeof currentPlayer.weeklyLog[d] === 'number' ? currentPlayer.weeklyLog[d] : 0), 0);
   // Only add new week makes to base (avoid double-counting)
@@ -4743,7 +4741,7 @@ document.getElementById('modal-confirm').addEventListener('click', () => {
   // Update personalBest
   if (selectedValue > (currentPlayer.personalBest || 0)) currentPlayer.personalBest = selectedValue;
   currentPlayer.daysLogged = (currentPlayer.daysLogged || 0) + 1;
-  dbLogShot(currentPlayer.id, getLiveToday(), selectedValue);
+  dbLogShot(currentPlayer.id, todayKey, selectedValue);
   dbSavePlayer(currentPlayer);
   saveState();
   renderPlayerList();
@@ -5514,6 +5512,7 @@ searchInput.addEventListener('input', () => {
 function renderAll() {
   renderAnalytics();
   renderRoster();
+  if (currentTab === 'log') renderPlayerList();
 }
 
 // ── TAB SOUNDS ──
