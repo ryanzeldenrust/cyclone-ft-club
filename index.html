@@ -2486,6 +2486,96 @@ body { font-family:'JetBrains Mono',monospace; background:#1a1a1a;
 .search-stat-label {
   font-size:8px; font-weight:700; letter-spacing:0.8px; color:var(--gray); margin-top:3px;
 }
+.search-graph-wrap {
+  margin-top:10px;
+  background:var(--white);
+  border:2px solid var(--ink);
+  border-radius:10px;
+  padding:8px;
+  box-shadow:1.5px 1.5px 0 var(--ink);
+}
+.search-graph-title {
+  font-family:'Anton',sans-serif;
+  font-size:11px;
+  letter-spacing:1px;
+  color:var(--ink);
+  margin-bottom:4px;
+  text-align:center;
+}
+.search-graph-canvas {
+  width:100%;
+  height:92px;
+  display:block;
+}
+.search-graph-labels {
+  display:flex;
+  justify-content:space-between;
+  gap:4px;
+  margin-top:4px;
+  font-size:7px;
+  font-weight:800;
+  color:var(--gray);
+  letter-spacing:0.4px;
+}
+.search-socks-row {
+  margin-top:8px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:rgba(255,255,255,0.75);
+  border:2px solid var(--ink);
+  border-radius:10px;
+  padding:7px 8px;
+  box-shadow:1.5px 1.5px 0 var(--ink);
+}
+.search-socks-label {
+  font-family:'Anton',sans-serif;
+  font-size:10px;
+  letter-spacing:0.8px;
+  color:var(--ink);
+  flex-shrink:0;
+}
+.coach-export-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+.export-btn {
+  padding:12px 8px;
+  border:2.5px solid var(--ink);
+  border-radius:12px;
+  font-family:'Anton',sans-serif;
+  font-size:13px;
+  letter-spacing:0.8px;
+  color:var(--white);
+  background:linear-gradient(180deg,var(--red-bright),var(--red-deep));
+  box-shadow:2px 3px 0 var(--ink);
+  cursor:pointer;
+}
+.export-btn:active { transform:translateY(2px); box-shadow:1px 1px 0 var(--ink); }
+.team-select-row {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+.team-pick {
+  border:2.5px solid var(--ink);
+  border-radius:12px;
+  padding:10px 6px;
+  background:var(--white);
+  box-shadow:1.5px 1.5px 0 var(--ink);
+  font-family:'Anton',sans-serif;
+  font-size:12px;
+  letter-spacing:0.8px;
+  color:var(--ink);
+  text-align:center;
+  cursor:pointer;
+}
+.team-pick.selected {
+  background:linear-gradient(180deg,var(--gold-bright),var(--gold));
+  color:var(--red-deep);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,0.55), 2px 3px 0 var(--ink);
+}
 .search-no-result {
   font-family:'Anton',sans-serif; font-size:13px; color:var(--gray);
   text-align:center; padding:10px 0; letter-spacing:0.5px;
@@ -3567,6 +3657,15 @@ body { font-family:'JetBrains Mono',monospace; background:#1a1a1a;
         </div>
       </div>
       <div class="coach-section">
+        <div class="section-header"><span class="section-icon">📄</span><span class="section-title">EXPORT STATS</span></div>
+        <div class="section-body">
+          <div class="coach-export-grid">
+            <button class="export-btn" id="export-mens-btn">MEN'S CSV</button>
+            <button class="export-btn" id="export-womens-btn">WOMEN'S CSV</button>
+          </div>
+        </div>
+      </div>
+      <div class="coach-section">
         <div class="section-header"><span class="section-icon">✏️</span><span class="section-title">CORRECT A LOG</span></div>
         <div class="section-body">
           <div class="correction-selects">
@@ -3612,6 +3711,13 @@ body { font-family:'JetBrains Mono',monospace; background:#1a1a1a;
     <div class="modal-card">
       <div class="modal-title" id="player-modal-title">ADD PLAYER</div>
       <div class="modal-field"><span class="modal-label">FULL NAME</span><input class="modal-input" id="player-name-input" placeholder="First Last" maxlength="24" /></div>
+      <div class="modal-field">
+        <span class="modal-label">TEAM</span>
+        <div class="team-select-row">
+          <button class="team-pick selected" type="button" data-team="mens">MEN'S TEAM</button>
+          <button class="team-pick" type="button" data-team="womens">WOMEN'S TEAM</button>
+        </div>
+      </div>
       <div class="modal-field"><span class="modal-label">AVATAR COLOR</span><div class="color-swatches" id="color-swatches"></div></div>
       <div class="modal-field"><span class="modal-label">DIZZY AVATAR</span><div class="dizzy-picker" id="dizzy-picker"></div><div class="dizzy-picker-name" id="dizzy-picker-name"></div></div>
       <div class="modal-btns"><button class="modal-cancel" id="player-modal-cancel">CANCEL</button><button class="modal-save" id="player-modal-save">SAVE</button></div>
@@ -3729,6 +3835,7 @@ async function dbLoadAll() {
       return {
         id: p.id, name: p.name, avatarKey: p.avatar_key, avatarColor: p.avatar_color,
         initials: p.name.split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2),
+        team: p.team || 'mens',
         seasonTotal: p.season_total, daysLogged: p.days_logged, personalBest: p.personal_best,
         weeklyBest: p.weekly_best, trophies: p.trophies, previousRank: p.previous_rank,
         _baseSeason: p.base_season, _baseLogged: p.base_logged, weeklyLog: wl
@@ -3756,13 +3863,25 @@ async function dbLogShot(playerId, dayKey, makes) {
 
 async function dbSavePlayer(p) {
   try {
-    await sb.patch('players','id=eq.'+p.id, {
+    var payload = {
       season_total:p.seasonTotal, days_logged:p.daysLogged, personal_best:p.personalBest,
       weekly_best:p.weeklyBest, trophies:p.trophies, previous_rank:p.previousRank,
       base_season:p._baseSeason||0, base_logged:p._baseLogged||0,
-      avatar_key:p.avatarKey, avatar_color:p.avatarColor, name:p.name
-    });
-  } catch(e) { console.error('dbSavePlayer:', e); }
+      avatar_key:p.avatarKey, avatar_color:p.avatarColor, name:p.name, team:p.team||'mens'
+    };
+    await sb.patch('players','id=eq.'+p.id, payload);
+  } catch(e) {
+    console.error('dbSavePlayer:', e);
+    try {
+      var fallback = {
+        season_total:p.seasonTotal, days_logged:p.daysLogged, personal_best:p.personalBest,
+        weekly_best:p.weeklyBest, trophies:p.trophies, previous_rank:p.previousRank,
+        base_season:p._baseSeason||0, base_logged:p._baseLogged||0,
+        avatar_key:p.avatarKey, avatar_color:p.avatarColor, name:p.name
+      };
+      await sb.patch('players','id=eq.'+p.id, fallback);
+    } catch(_e) { console.error('dbSavePlayer fallback:', _e); }
+  }
 }
 
 async function dbSaveAllPlayers() {
@@ -3774,10 +3893,20 @@ async function dbAddPlayer(p) {
     var rows = await sb.post('players', {
       name:p.name, avatar_key:p.avatarKey||'welcome', avatar_color:p.avatarColor||'#e84393',
       season_total:0, days_logged:0, personal_best:0, weekly_best:0,
-      trophies:0, previous_rank:0, base_season:0, base_logged:0
+      trophies:0, previous_rank:0, base_season:0, base_logged:0, team:p.team||'mens'
     });
     return rows[0];
-  } catch(e) { console.error('dbAddPlayer:', e); return null; }
+  } catch(e) {
+    console.error('dbAddPlayer:', e);
+    try {
+      var rows = await sb.post('players', {
+        name:p.name, avatar_key:p.avatarKey||'welcome', avatar_color:p.avatarColor||'#e84393',
+        season_total:0, days_logged:0, personal_best:0, weekly_best:0,
+        trophies:0, previous_rank:0, base_season:0, base_logged:0
+      });
+      return rows[0];
+    } catch(_e) { console.error('dbAddPlayer fallback:', _e); return null; }
+  }
 }
 
 async function dbDeletePlayer(pid) {
@@ -3901,19 +4030,19 @@ const TODAY_LABEL = 'WEDNESDAY · APR 30';
 const DAYS = ['MON','TUE','WED','THU','FRI','SAT'];
 
 const DEFAULT_PLAYERS = [
-  { id:1, name:'Aaron Mills',  initials:'AM', avatarColor:'#fdcb6e', avatarId:0,
+  { id:1, name:'Aaron Mills',  initials:'AM', avatarColor:'#fdcb6e', avatarId:0, team:'mens',
     seasonTotal:198, trophies:0, personalBest:15, weeklyBest:98, daysLogged:35,
     weeklyLog:{MON:12,TUE:9,WED:15,THU:null,FRI:null,SAT:null}, previousRank:5 },
-  { id:2, name:'Devon Carter', initials:'DC', avatarColor:'#6c5ce7', avatarId:2,
+  { id:2, name:'Devon Carter', initials:'DC', avatarColor:'#6c5ce7', avatarId:2, team:'mens',
     seasonTotal:265, trophies:2, personalBest:22, weeklyBest:121, daysLogged:42,
     weeklyLog:{MON:14,TUE:16,WED:18,THU:null,FRI:null,SAT:null}, previousRank:3 },
-  { id:3, name:'Jake Brown',   initials:'JB', avatarColor:'#e17055', avatarId:3,
+  { id:3, name:'Jake Brown',   initials:'JB', avatarColor:'#e17055', avatarId:3, team:'mens',
     seasonTotal:241, trophies:1, personalBest:19, weeklyBest:112, daysLogged:39,
     weeklyLog:{MON:null,TUE:18,WED:null,THU:null,FRI:null,SAT:null}, previousRank:4 },
-  { id:4, name:'Marcus Webb',  initials:'MW', avatarColor:'#e84393', avatarId:0,
+  { id:4, name:'Marcus Webb',  initials:'MW', avatarColor:'#e84393', avatarId:0, team:'mens',
     seasonTotal:312, trophies:4, personalBest:25, weeklyBest:134, daysLogged:48,
     weeklyLog:{MON:23,TUE:21,WED:19,THU:null,FRI:null,SAT:null}, previousRank:1 },
-  { id:5, name:'Tyrone Davis', initials:'TD', avatarColor:'#00b894', avatarId:1,
+  { id:5, name:'Tyrone Davis', initials:'TD', avatarColor:'#00b894', avatarId:1, team:'mens',
     seasonTotal:287, trophies:2, personalBest:23, weeklyBest:128, daysLogged:44,
     weeklyLog:{MON:19,TUE:22,WED:20,THU:null,FRI:null,SAT:null}, previousRank:2 },
 ];
@@ -4943,6 +5072,8 @@ function drawSeasonGraph(p) {
   var canvas = document.getElementById('champs-modal-graph');
   var labelsEl = document.getElementById('champs-modal-graph-labels');
   if (!canvas) return;
+  drawSeasonGraphOnCanvas(p, canvas, labelsEl);
+  return;
   var ctx = canvas.getContext('2d');
   var W = canvas.width, H = canvas.height;
   ctx.clearRect(0, 0, W, H);
@@ -5024,6 +5155,83 @@ function drawSeasonGraph(p) {
   });
 
   // Labels
+  if (labelsEl) {
+    labelsEl.innerHTML = labels.map(function(l) {
+      return '<span class="modal-graph-label">'+l+'</span>';
+    }).join('');
+  }
+}
+
+function buildSeasonGraphData(p) {
+  var points = [];
+  var labels = [];
+  var hist = [...(WEEK_HISTORY || [])].reverse();
+  hist.forEach(function(wk) {
+    var playerEntry = wk.winner && wk.winner.name === p.name
+      ? wk.winner
+      : (wk.runners || []).find(function(r){ return r.name === p.name; });
+    points.push(playerEntry ? playerEntry.makes : 0);
+    labels.push('WK' + wk.weekNum);
+  });
+  var curMakes = DAYS.reduce(function(s,d){ return s + (typeof p.weeklyLog[d] === 'number' ? p.weeklyLog[d] : 0); }, 0);
+  points.push(curMakes);
+  labels.push('NOW');
+  return {points: points, labels: labels};
+}
+
+function drawSeasonGraphOnCanvas(p, canvas, labelsEl) {
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  var data = buildSeasonGraphData(p);
+  var points = data.points;
+  var labels = data.labels;
+  if (points.length < 2) {
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.font = '700 10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('MORE DATA AFTER FIRST WEEK', W/2, H/2);
+    if (labelsEl) labelsEl.innerHTML = '';
+    return;
+  }
+  var maxVal = Math.max.apply(null, points.concat([1]));
+  var pad = 8;
+  var plotW = W - pad*2;
+  var plotH = H - pad*2;
+  ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+  ctx.lineWidth = 1;
+  for (var g = 0; g <= 4; g++) {
+    var gy = pad + (plotH * g / 4);
+    ctx.beginPath(); ctx.moveTo(pad, gy); ctx.lineTo(W-pad, gy); ctx.stroke();
+  }
+  ctx.beginPath();
+  points.forEach(function(val, i) {
+    var x = pad + (i / (points.length-1)) * plotW;
+    var y = pad + plotH - (val / maxVal) * plotH;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = '#c8102e';
+  ctx.lineWidth = 2.5;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+  var lastX = pad + plotW;
+  var firstX = pad;
+  ctx.lineTo(lastX, H-pad);
+  ctx.lineTo(firstX, H-pad);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(200,16,46,0.1)';
+  ctx.fill();
+  points.forEach(function(val, i) {
+    var x = pad + (i / (points.length-1)) * plotW;
+    var y = pad + plotH - (val / maxVal) * plotH;
+    ctx.beginPath();
+    ctx.arc(x, y, 3.5, 0, Math.PI*2);
+    ctx.fillStyle = i === points.length-1 ? '#f4c430' : '#c8102e';
+    ctx.strokeStyle = '#1a1a1a';
+    ctx.lineWidth = 1.5;
+    ctx.fill(); ctx.stroke();
+  });
   if (labelsEl) {
     labelsEl.innerHTML = labels.map(function(l) {
       return '<span class="modal-graph-label">'+l+'</span>';
@@ -5314,6 +5522,7 @@ function showFixMsg(msg, isErr=false) {
 let editingPlayerId = null;
 let selectedColor = AVATAR_COLORS[0];
 let selectedAvatarId = 0;
+let selectedTeam = 'mens';
 let deleteTargetId = null;
 
 // (PLAYERS array removed)
@@ -5383,10 +5592,18 @@ function buildDizzyPicker(selectedId) {
   nameEl.textContent = DIZZY_POOL_LABELS[selectedId] || '';
 }
 
+function setTeamPick(team) {
+  selectedTeam = team || 'mens';
+  document.querySelectorAll('.team-pick').forEach(btn => {
+    btn.classList.toggle('selected', btn.dataset.team === selectedTeam);
+  });
+}
+
 function openPlayerModal(player=null) {
   editingPlayerId = player ? player.id : null;
   document.getElementById('player-modal-title').textContent = player ? 'EDIT PLAYER' : 'ADD PLAYER';
   document.getElementById('player-name-input').value = player ? player.name : '';
+  setTeamPick(player ? (player.team || 'mens') : 'mens');
   selectedColor = player ? player.avatarColor : AVATAR_COLORS[Math.floor(Math.random()*AVATAR_COLORS.length)];
   selectedAvatarId = player ? (player.avatarId || 0) : Math.floor(Math.random()*DIZZY_POOL_KEYS.length);
   buildColorSwatches(selectedColor);
@@ -5413,27 +5630,38 @@ document.getElementById('add-player-btn').addEventListener('click', () => {
   SFX.row(); openPlayerModal();
 });
 
+document.querySelectorAll('.team-pick').forEach(btn => {
+  btn.addEventListener('click', () => { SFX.pill(); setTeamPick(btn.dataset.team); });
+});
+
 document.getElementById('player-modal-cancel').addEventListener('click', () => {
   SFX.dismiss();
   document.getElementById('player-modal').classList.remove('show');
 });
 
-document.getElementById('player-modal-save').addEventListener('click', () => {
+document.getElementById('player-modal-save').addEventListener('click', async () => {
   const name = document.getElementById('player-name-input').value.trim();
   if (!name) return;
   const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
   if (editingPlayerId) {
     const p = PLAYERS.find(p => p.id === editingPlayerId);
-    if (p) { p.name = name; p.initials = initials; p.avatarColor = selectedColor; p.avatarId = selectedAvatarId; }
+    if (p) {
+      p.name = name; p.initials = initials; p.avatarColor = selectedColor; p.avatarId = selectedAvatarId; p.team = selectedTeam;
+      await dbSavePlayer(p);
+    }
   } else {
-    PLAYERS.push({
-      id:nextId++, name, initials, avatarColor:selectedColor, avatarId:selectedAvatarId,
+    const newPlayer = {
+      id:nextId++, name, initials, avatarColor:selectedColor, avatarId:selectedAvatarId, team:selectedTeam,
       seasonTotal:0, trophies:0, personalBest:0, weeklyBest:0, daysLogged:0,
       weeklyLog:{MON:null,TUE:null,WED:null,THU:null,FRI:null,SAT:null}
-    });
+    };
+    const saved = await dbAddPlayer(newPlayer);
+    if (saved && saved.id) newPlayer.id = saved.id;
+    PLAYERS.push(newPlayer);
   }
   SFX.success();
   document.getElementById('player-modal').classList.remove('show');
+  saveState();
   renderAll();
 });
 
@@ -5473,6 +5701,14 @@ resetBtn.addEventListener('click', () => {
 
 // ── PLAYER SEARCH ──
 const searchInput = document.getElementById('search-input');
+function playerAttempts(p) { return (p.daysLogged || 0) * 25; }
+function playerFtPct(p) {
+  var attempts = playerAttempts(p);
+  return attempts > 0 ? ((p.seasonTotal || 0) / attempts) * 100 : 0;
+}
+function playerDailyAvg(p) {
+  return (p.daysLogged || 0) > 0 ? (p.seasonTotal || 0) / p.daysLogged : 0;
+}
 searchInput.addEventListener('input', () => {
   const q = searchInput.value.trim().toLowerCase();
   const results = document.getElementById('search-results');
@@ -5483,9 +5719,11 @@ searchInput.addEventListener('input', () => {
     return;
   }
   results.innerHTML = matches.map(p => {
-    const pct = p.daysLogged > 0
-      ? ((p.seasonTotal / (p.daysLogged * 25)) * 100).toFixed(1)
-      : '0.0';
+    const pct = playerFtPct(p).toFixed(1);
+    const attempts = playerAttempts(p);
+    const avg = playerDailyAvg(p).toFixed(1);
+    const graphId = `coach-search-graph-${p.id}`;
+    const labelId = `coach-search-labels-${p.id}`;
     return `
       <div class="search-result-card">
         <div class="search-result-name">${p.name.toUpperCase()}</div>
@@ -5495,6 +5733,10 @@ searchInput.addEventListener('input', () => {
             <div class="search-stat-label">SEASON MAKES</div>
           </div>
           <div class="search-stat-box">
+            <div class="search-stat-val">${attempts}</div>
+            <div class="search-stat-label">SHOTS TAKEN</div>
+          </div>
+          <div class="search-stat-box">
             <div class="search-stat-val">${pct}%</div>
             <div class="search-stat-label">SHOOTING %</div>
           </div>
@@ -5502,11 +5744,86 @@ searchInput.addEventListener('input', () => {
             <div class="search-stat-val">${p.daysLogged}</div>
             <div class="search-stat-label">DAYS LOGGED</div>
           </div>
+          <div class="search-stat-box">
+            <div class="search-stat-val">${avg}</div>
+            <div class="search-stat-label">DAILY AVG</div>
+          </div>
+          <div class="search-stat-box">
+            <div class="search-stat-val">${p.trophies || 0}</div>
+            <div class="search-stat-label">TROPHIES</div>
+          </div>
+        </div>
+        <div class="search-graph-wrap">
+          <div class="search-graph-title">SEASON PROGRESS</div>
+          <canvas id="${graphId}" class="search-graph-canvas" width="280" height="92"></canvas>
+          <div class="search-graph-labels" id="${labelId}"></div>
+        </div>
+        <div class="search-socks-row">
+          <div class="search-socks-label">TROPHIES</div>
+          <div>${p.trophies > 0 ? sockIcons(p.trophies, 18) : '<span class="no-socks">NO TROPHIES YET</span>'}</div>
         </div>
       </div>
     `;
   }).join('');
+  setTimeout(function() {
+    matches.forEach(function(p) {
+      drawSeasonGraphOnCanvas(
+        p,
+        document.getElementById(`coach-search-graph-${p.id}`),
+        document.getElementById(`coach-search-labels-${p.id}`)
+      );
+    });
+  }, 0);
 });
+
+function csvEscape(value) {
+  var s = String(value == null ? '' : value);
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+function downloadPlayerStatsCsv(team) {
+  var teamLabel = team === 'womens' ? "Women's Team" : "Men's Team";
+  var rows = PLAYERS
+    .filter(function(p){ return (p.team || 'mens') === team; })
+    .sort(function(a,b){ return (b.seasonTotal || 0) - (a.seasonTotal || 0); });
+  var headers = [
+    'Rank','Player','Team','Shots Made','Shots Taken','Shooting Percentage',
+    'Daily Average Makes','Days Logged','Daily PR','Best Week','Trophies'
+  ];
+  var lines = [headers.map(csvEscape).join(',')];
+  rows.forEach(function(p, i) {
+    lines.push([
+      i + 1,
+      p.name,
+      teamLabel,
+      p.seasonTotal || 0,
+      playerAttempts(p),
+      playerFtPct(p).toFixed(1) + '%',
+      playerDailyAvg(p).toFixed(1),
+      p.daysLogged || 0,
+      p.personalBest || 0,
+      p.weeklyBest || 0,
+      p.trophies || 0
+    ].map(csvEscape).join(','));
+  });
+  if (!rows.length) {
+    lines.push(['', 'No players found for ' + teamLabel, teamLabel, 0, 0, '0.0%', '0.0', 0, 0, 0, 0].map(csvEscape).join(','));
+  }
+  var blob = new Blob([lines.join('\n')], {type:'text/csv;charset=utf-8;'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  var stamp = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = 'cyclone-ft-club-' + team + '-stats-' + stamp + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  SFX.success();
+}
+
+document.getElementById('export-mens-btn').addEventListener('click', function(){ downloadPlayerStatsCsv('mens'); });
+document.getElementById('export-womens-btn').addEventListener('click', function(){ downloadPlayerStatsCsv('womens'); });
 
 // ── RENDER ALL ──
 function renderAll() {
