@@ -4989,7 +4989,7 @@ var _el_champs_header_dizzy=document.getElementById('champs-header-dizzy');if(_e
 // ── PODIUM DIZZY ASSIGNMENTS ──
 // 1st always gets dizzy_number1 (the champion foam finger pose)
 // 2nd and 3rd get THEIR OWN permanent season avatar
-var _el_dizzy_1st=document.getElementById('dizzy-1st');if(_el_dizzy_1st){_el_dizzy_1st.src=LOG_ASSETS.dizzy_number1;}
+var _el_dizzy_1st=document.getElementById('dizzy-1st');if(_el_dizzy_1st){_el_dizzy_1st.removeAttribute('src');}
 // (RANKED computed in renderPodium instead)
 // (RANKED computed in renderPodium instead)
 
@@ -5013,13 +5013,18 @@ function sockIcons(count, size=14) {
 // ── RENDER PODIUM ──
 function renderPodium() {
   const RANKED = [...PLAYERS].sort((a,b) => b.seasonTotal-a.seasonTotal);
-  var _el_d1 = document.getElementById('dizzy-1st');
-  var _el_d2 = document.getElementById('dizzy-2nd');
-  var _el_d3 = document.getElementById('dizzy-3rd');
-  if (_el_d1) _el_d1.src = LOG_ASSETS.dizzy_number1;
-  if (_el_d2 && RANKED[1]) _el_d2.src = getDizzyAvatar(RANKED[1]);
-  if (_el_d3 && RANKED[2]) _el_d3.src = getDizzyAvatar(RANKED[2]);
-  const ordinalSuffix = n => ['','ST','ND','RD'][n] || 'TH';
+  const cols = ['1st','2nd','3rd'];
+  cols.forEach(col => {
+    const img = document.getElementById(`dizzy-${col}`);
+    const name = document.getElementById(`name-${col}`);
+    const makes = document.getElementById(`makes-${col}`);
+    const socks = document.getElementById(`socks-${col}`);
+    if (img) { img.removeAttribute('src'); img.style.visibility = 'hidden'; }
+    if (name) name.textContent = '—';
+    if (makes) makes.textContent = '—';
+    if (socks) socks.innerHTML = '';
+  });
+
   const PODIUM = [
     {rank:1, col:'1st', player: RANKED[0]},
     {rank:2, col:'2nd', player: RANKED[1]},
@@ -5027,8 +5032,13 @@ function renderPodium() {
   ];
   PODIUM.forEach(({rank, col, player}) => {
     if (!player) return;
+    const img = document.getElementById(`dizzy-${col}`);
+    if (img) {
+      img.src = rank === 1 ? LOG_ASSETS.dizzy_number1 : getDizzyAvatar(player);
+      img.style.visibility = 'visible';
+    }
     document.getElementById(`name-${col}`).textContent = player.name.split(' ')[0].toUpperCase();
-    document.getElementById(`makes-${col}`).textContent = player.seasonTotal;
+    document.getElementById(`makes-${col}`).textContent = player.seasonTotal || 0;
     document.getElementById(`socks-${col}`).innerHTML = sockIcons(player.trophies, 13);
   });
 }
