@@ -3823,11 +3823,11 @@ function getCurrentWeekKey() {
 var CURRENT_WEEK_KEY = getCurrentWeekKey();
 
 // ── Load all data from Supabase ──
-async function dbLoadAll() {
+async function dbLoadAll(weekKey) {
   try {
     var results = await Promise.all([
       sb.get('players','order=id.asc'),
-      sb.get('weekly_logs','week_key=eq.'+CURRENT_WEEK_KEY),
+      sb.get('weekly_logs','week_key=eq.'+(weekKey || CURRENT_WEEK_KEY)),
       sb.get('week_history','order=week_num.desc'),
       sb.get('app_settings','')
     ]);
@@ -3855,6 +3855,8 @@ async function dbLoadAll() {
 
     var pc = settings.find(function(s){return s.key==='passcode';});
     if (pc) COACH_PASSCODE = pc.value;
+    var wkSetting = settings.find(function(s){return s.key==='week_key';});
+    window._SERVER_WEEK_KEY = wkSetting ? wkSetting.value : '';
     if (playerRows.length > 0) nextPlayerId = Math.max.apply(null, playerRows.map(function(p){return p.id;}))+1;
     console.log('Supabase loaded:', PLAYERS.length, 'players');
     return true;
@@ -4139,12 +4141,30 @@ function getDayKey(date){return ['SUN','MON','TUE','WED','THU','FRI','SAT'][date
 function getWeekDateRange(date){var d=new Date(date),day=d.getDay(),diff=(day===0)?-6:1-day,mon=new Date(d);mon.setDate(d.getDate()+diff);var sat=new Date(mon);sat.setDate(mon.getDate()+5);var M=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];return M[mon.getMonth()]+' '+mon.getDate()+' - '+M[sat.getMonth()]+' '+sat.getDate();}
 function getWeekNumber(date){return Math.max(1,Math.floor((new Date(date)-new Date(2026,0,5))/(7*24*60*60*1000))+1);}
 function getDayLabel(date){var D=['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'],M=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];return D[date.getDay()]+' - '+M[date.getMonth()]+' '+date.getDate();}
-function performWeekRollover(oldKey){
+async function performWeekRollover(oldKey, completedPreviousWeek){
+  if (!PLAYERS || !PLAYERS.length) return;
   var _ws=[...PLAYERS].sort(function(a,b){var am=DAYS.reduce(function(s,d){return s+(typeof a.weeklyLog[d]==='number'?a.weeklyLog[d]:0);},0),bm=DAYS.reduce(function(s,d){return s+(typeof b.weeklyLog[d]==='number'?b.weeklyLog[d]:0);},0);return bm-am;});
   var _wr=_ws.map(function(p){return {name:p.name,makes:DAYS.reduce(function(s,d){return s+(typeof p.weeklyLog[d]==='number'?p.weeklyLog[d]:0);},0)};}).filter(function(e){return e.makes>0;});
-  if(_wr.length>0){WEEK_HISTORY.unshift({weekNum:window._LIVE_WEEK_NUM||3,weekRange:window._LIVE_WEEK_RANGE||WEEK_RANGE,winner:_wr[0],runners:_wr.slice(1,4)});var _top=_wr[0].makes;PLAYERS.forEach(function(p){var _pm=DAYS.reduce(function(s,d){return s+(typeof p.weeklyLog[d]==='number'?p.weeklyLog[d]:0);},0);if(_pm===_top&&_top>0)p.trophies=(p.trophies||0)+1;});}
-  PLAYERS.forEach(function(p){var wm=DAYS.reduce(function(s,d){return s+(typeof p.weeklyLog[d]==='number'?p.weeklyLog[d]:0);},0);if(wm>(p.weeklyBest||0))p.weeklyBest=wm;p.weeklyLog={MON:null,TUE:null,WED:null,THU:null,FRI:null,SAT:null};p._baseSeason=p.seasonTotal;p._baseLogged=p.daysLogged;});
-  var sorted=[...PLAYERS].sort(function(a,b){return b.seasonTotal-a.seasonTotal;});sorted.forEach(function(p,i){p.previousRank=i+1;});
+  if(_wr.length>0){
+    var histDate=getCSTDate();
+    if (completedPreviousWeek) histDate.setDate(histDate.getDate()-7);
+    var entry={weekNum:getWeekNumber(histDate),weekRange:getWeekDateRange(histDate),winner:_wr[0],runners:_wr.slice(1,4)};
+    WEEK_HISTORY.unshift(entry);
+    await dbSaveWeekHistory(entry);
+    var _top=_wr[0].makes;
+    PLAYERS.forEach(function(p){var _pm=DAYS.reduce(function(s,d){return s+(typeof p.weeklyLog[d]==='number'?p.weeklyLog[d]:0);},0);if(_pm===_top&&_top>0)p.trophies=(p.trophies||0)+1;});
+  }
+  PLAYERS.forEach(function(p){
+    var wm=DAYS.reduce(function(s,d){return s+(typeof p.weeklyLog[d]==='number'?p.weeklyLog[d]:0);},0);
+    if(wm>(p.weeklyBest||0))p.weeklyBest=wm;
+    recomputeSeasonTotal(p);
+    p._baseSeason=p.seasonTotal||0;
+    p._baseLogged=p.daysLogged||0;
+    p.weeklyLog={MON:null,TUE:null,WED:null,THU:null,FRI:null,SAT:null};
+  });
+  var sorted=[...PLAYERS].sort(function(a,b){return (b.seasonTotal||0)-(a.seasonTotal||0);});sorted.forEach(function(p,i){p.previousRank=i+1;});
+  await dbSaveAllPlayers();
+  await dbClearWeeklyLogs(oldKey || CURRENT_WEEK_KEY);
   saveState();
 }
 function getLiveToday(){return window._LIVE_TODAY||TODAY;}
@@ -4152,13 +4172,11 @@ function getLiveWeekLabel(){return 'WEEK '+(window._LIVE_WEEK_NUM||3);}
 function getLiveWeekRange(){return window._LIVE_WEEK_RANGE||WEEK_RANGE;}
 function getLiveDayLabel(){return window._LIVE_DAY_LABEL||TODAY_LABEL;}
 function isSundayLive(){return window._IS_SUNDAY||false;}
-function initWeekState(){
-  var now=getCSTDate(),wk=getWeekKey(now),dow=now.getDay(),stored=null;
-  try{stored=localStorage.getItem('cyclone_week_key');}catch(e){}
-  if(stored&&stored!==wk&&dow>=1){performWeekRollover(stored);}
-  if(dow!==0||!stored){try{localStorage.setItem('cyclone_week_key',wk);}catch(e){}}
+function applyLiveWeekState(date){
+  var now=date||getCSTDate(),dow=now.getDay();
   window._LIVE_TODAY=getDayKey(now);window._LIVE_WEEK_NUM=getWeekNumber(now);window._LIVE_WEEK_RANGE=getWeekDateRange(now);window._LIVE_DAY_LABEL=getDayLabel(now);window._IS_SUNDAY=(dow===0);
 }
+function initWeekState(){ applyLiveWeekState(getCSTDate()); }
 function renderWeekHistory(){
   var el=document.getElementById('wh-list');if(!el)return;
   if(!WEEK_HISTORY||WEEK_HISTORY.length===0){el.innerHTML='<div class="wh-empty">NO COMPLETED WEEKS YET!<br>CHECK BACK AFTER YOUR FIRST WEEK.</div>';return;}
@@ -4871,7 +4889,7 @@ document.getElementById('modal-cancel').addEventListener('click', () => {
   SFX.dismiss();
   document.getElementById('confirm-modal').classList.remove('show');
 });
-document.getElementById('modal-confirm').addEventListener('click', () => {
+document.getElementById('modal-confirm').addEventListener('click', async () => {
   SFX.tab();
   document.getElementById('confirm-modal').classList.remove('show');
   if (!currentPlayer) return;
@@ -4886,19 +4904,12 @@ document.getElementById('modal-confirm').addEventListener('click', () => {
   }
   // Save to player's log
   currentPlayer.weeklyLog[todayKey] = selectedValue;
-  // Recompute season total from weekly log + base
-  const _weekMakes = DAYS.reduce((s, d) => s + (typeof currentPlayer.weeklyLog[d] === 'number' ? currentPlayer.weeklyLog[d] : 0), 0);
-  // Only add new week makes to base (avoid double-counting)
-  currentPlayer.seasonTotal = (currentPlayer._baseSeason || 0) + _weekMakes;
-  if (!currentPlayer._baseSeason) {
-    // First time logging this week - set base
-    currentPlayer._baseSeason = currentPlayer.seasonTotal - _weekMakes;
-  }
-  // Update personalBest
   if (selectedValue > (currentPlayer.personalBest || 0)) currentPlayer.personalBest = selectedValue;
-  currentPlayer.daysLogged = (currentPlayer.daysLogged || 0) + 1;
-  dbLogShot(currentPlayer.id, todayKey, selectedValue);
-  dbSavePlayer(currentPlayer);
+  recomputeSeasonTotal(currentPlayer);
+  const _weekMakes = DAYS.reduce((s, d) => s + (typeof currentPlayer.weeklyLog[d] === 'number' ? currentPlayer.weeklyLog[d] : 0), 0);
+  if (_weekMakes > (currentPlayer.weeklyBest || 0)) currentPlayer.weeklyBest = _weekMakes;
+  await dbLogShot(currentPlayer.id, todayKey, selectedValue);
+  await dbSavePlayer(currentPlayer);
   saveState();
   renderPlayerList();
   if (selectedValue === 25) {
@@ -5902,7 +5913,24 @@ document.addEventListener('DOMContentLoaded', async function() {
   // ── SUPABASE BOOT ──
   document.body.style.opacity = '0.5';
   try {
-    var _dbOk = await dbLoadAll();
+    var now=getCSTDate(), wk=getWeekKey(now), dow=now.getDay(), stored=null;
+    try{stored=localStorage.getItem('cyclone_week_key');}catch(e){}
+    applyLiveWeekState(now);
+    var _dbOk = await dbLoadAll(wk);
+    if (window._SERVER_WEEK_KEY) stored = window._SERVER_WEEK_KEY;
+    if (stored && stored !== wk && dow >= 1) {
+      CURRENT_WEEK_KEY = stored;
+      await dbLoadAll(stored);
+      await performWeekRollover(stored, true);
+      CURRENT_WEEK_KEY = wk;
+      await dbSaveSetting('week_key', wk);
+      try{localStorage.setItem('cyclone_week_key',wk);}catch(e){}
+      await dbLoadAll(wk);
+    } else {
+      CURRENT_WEEK_KEY = wk;
+      if (!stored && dow !== 0) await dbSaveSetting('week_key', wk);
+      if (dow !== 0 || !stored) { try{localStorage.setItem('cyclone_week_key',wk);}catch(e){} }
+    }
     if (_dbOk && PLAYERS.length > 0) {
       console.log('Loaded', PLAYERS.length, 'players from Supabase');
     }
@@ -5931,8 +5959,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   (function(){var _e_done_shot_img=document.getElementById('done-shot-img');if(_e_done_shot_img){_e_done_shot_img.src=LOG_ASSETS.made_shot;}})();
   (function(){var _e_perfect_dizzy_img=document.getElementById('perfect-dizzy-img');if(_e_perfect_dizzy_img){_e_perfect_dizzy_img.src=DIZZY.onfire;}})();
 
-  // Establish live CST day/week before rendering any screen
-  initWeekState();
+  // Live CST day/week was established before data rendered
 
   // Boot board tab
   buildDrum();
@@ -5945,15 +5972,17 @@ document.addEventListener('DOMContentLoaded', async function() {
   var _wl2=document.getElementById('lb-week-label');if(_wl2)_wl2.textContent=getLiveWeekLabel();
   var _dl=document.getElementById('log-date-label');if(_dl)_dl.textContent=getLiveDayLabel();
   var _fb=document.getElementById('force-week-btn');
-  if(_fb){_fb.addEventListener('click',function(){
+  if(_fb){_fb.addEventListener('click',async function(){
     var _fc=document.getElementById('force-week-confirm');
     if(_fb.dataset.confirm!=='yes'){_fb.dataset.confirm='yes';_fb.textContent='TAP AGAIN TO CONFIRM';_fb.style.background='linear-gradient(180deg,#e67e22,#ca6f1e)';if(_fc)_fc.textContent='THIS WILL CLEAR ALL WEEKLY LOGS.';setTimeout(function(){_fb.dataset.confirm='';_fb.textContent='START NEW WEEK';_fb.style.background='linear-gradient(180deg,#2980b9,#1a5276)';if(_fc)_fc.textContent='';},4000);return;}
-    performWeekRollover(getWeekKey(getCSTDate()));try{localStorage.setItem('cyclone_week_key',getWeekKey(getCSTDate()));}catch(e){}
-    window._LIVE_TODAY=getDayKey(getCSTDate());window._LIVE_WEEK_NUM=getWeekNumber(getCSTDate());window._LIVE_WEEK_RANGE=getWeekDateRange(getCSTDate());
+    await performWeekRollover(CURRENT_WEEK_KEY, false); CURRENT_WEEK_KEY=getWeekKey(getCSTDate()); await dbSaveSetting('week_key',CURRENT_WEEK_KEY); try{localStorage.setItem('cyclone_week_key',CURRENT_WEEK_KEY);}catch(e){} 
+    applyLiveWeekState(getCSTDate());
     SFX.success();_fb.dataset.confirm='';_fb.textContent='START NEW WEEK';_fb.style.background='linear-gradient(180deg,#2980b9,#1a5276)';
     if(_fc){_fc.textContent='NEW WEEK STARTED - LOGS CLEARED';_fc.style.color='#27ae60';setTimeout(function(){_fc.textContent='';_fc.style.color='';},4000);}
     renderAll();
-  
+  });
+}
+
 // ── SCROLL CHEVRONS ──
 (function() {
   var pairs = [
@@ -5975,7 +6004,6 @@ document.addEventListener('DOMContentLoaded', async function() {
   }
   pairs.forEach(wireChevron);
 })();
-});}
   if (window._NEW_DAY) {
     var _allSteps = document.querySelectorAll('.step');
     var _picker = document.getElementById('step-picker');
