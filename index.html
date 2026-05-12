@@ -3847,6 +3847,7 @@ async function dbLoadAll(weekKey) {
         _baseSeason: p.base_season, _baseLogged: p.base_logged, weeklyLog: wl
       };
     });
+    PLAYERS.forEach(function(p){ normalizeSeasonBases(p); recomputeSeasonTotal(p); });
 
     WEEK_HISTORY = histRows.map(function(r) {
       return { weekNum: r.week_num, weekRange: r.week_range,
@@ -4102,29 +4103,43 @@ let WEEK_HISTORY = [];
 })();
 
 
-// Init _baseSeason for all players (week makes already in seasonTotal)
-PLAYERS.forEach(function(p) {
-  if (p._baseSeason === undefined) {
-    const weekMakes = DAYS.reduce(function(s,d){ return s + (typeof p.weeklyLog[d]==='number'?p.weeklyLog[d]:0); }, 0);
-    p._baseSeason = Math.max(0, p.seasonTotal - weekMakes);
-  }
-  if (p._baseLogged === undefined) {
-    const weekLogged = DAYS.filter(d => typeof p.weeklyLog[d] === 'number').length;
-    p._baseLogged = Math.max(0, (p.daysLogged || 0) - weekLogged);
-  }
-});
+// Base values are normalized after Supabase/local data loads.
 
-// ── RECOMPUTE PLAYER SEASON TOTAL ──
-function recomputeSeasonTotal(player) {
-  const weekMakes = DAYS.reduce((s, d) => {
+function currentWeekMakes(player) {
+  return DAYS.reduce((s, d) => {
     const v = player.weeklyLog[d];
     return s + (typeof v === 'number' ? v : 0);
   }, 0);
-  const base = player._baseSeason !== undefined ? player._baseSeason : (player.seasonTotal - weekMakes);
-  player._baseSeason = Math.max(0, base);
-  player.seasonTotal = player._baseSeason + weekMakes;
-  // Update daysLogged from weeklyLog
-  player.daysLogged = (player._baseLogged || 0) + DAYS.filter(d => typeof player.weeklyLog[d] === 'number').length;
+}
+function currentWeekLoggedDays(player) {
+  return DAYS.filter(d => typeof player.weeklyLog[d] === 'number').length;
+}
+function normalizeSeasonBases(player) {
+  const weekMakes = currentWeekMakes(player);
+  const weekLogged = currentWeekLoggedDays(player);
+  const savedSeason = Number(player.seasonTotal || 0);
+  const savedLogged = Number(player.daysLogged || 0);
+  const computedBaseSeason = Math.max(0, savedSeason - weekMakes);
+  const computedBaseLogged = Math.max(0, savedLogged - weekLogged);
+
+  if (player._baseSeason === undefined || player._baseSeason === null ||
+      (Number(player._baseSeason) === 0 && computedBaseSeason > 0) ||
+      Number(player._baseSeason) < computedBaseSeason) {
+    player._baseSeason = computedBaseSeason;
+  }
+  if (player._baseLogged === undefined || player._baseLogged === null ||
+      (Number(player._baseLogged) === 0 && computedBaseLogged > 0) ||
+      Number(player._baseLogged) < computedBaseLogged) {
+    player._baseLogged = computedBaseLogged;
+  }
+}
+
+// â”€â”€ RECOMPUTE PLAYER SEASON TOTAL â”€â”€
+function recomputeSeasonTotal(player) {
+  normalizeSeasonBases(player);
+  const weekMakes = currentWeekMakes(player);
+  player.seasonTotal = Number(player._baseSeason || 0) + weekMakes;
+  player.daysLogged = Number(player._baseLogged || 0) + currentWeekLoggedDays(player);
 }
 
 function showGuide() { var g=document.getElementById('guide-overlay'); if(g){g.style.display='flex';} SFX.pill(); }
@@ -4143,6 +4158,7 @@ function getWeekNumber(date){return Math.max(1,Math.floor((new Date(date)-new Da
 function getDayLabel(date){var D=['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'],M=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];return D[date.getDay()]+' - '+M[date.getMonth()]+' '+date.getDate();}
 async function performWeekRollover(oldKey, completedPreviousWeek){
   if (!PLAYERS || !PLAYERS.length) return;
+  PLAYERS.forEach(normalizeSeasonBases);
   var _ws=[...PLAYERS].sort(function(a,b){var am=DAYS.reduce(function(s,d){return s+(typeof a.weeklyLog[d]==='number'?a.weeklyLog[d]:0);},0),bm=DAYS.reduce(function(s,d){return s+(typeof b.weeklyLog[d]==='number'?b.weeklyLog[d]:0);},0);return bm-am;});
   var _wr=_ws.map(function(p){return {name:p.name,makes:DAYS.reduce(function(s,d){return s+(typeof p.weeklyLog[d]==='number'?p.weeklyLog[d]:0);},0)};}).filter(function(e){return e.makes>0;});
   if(_wr.length>0){
@@ -4903,6 +4919,7 @@ document.getElementById('modal-confirm').addEventListener('click', async () => {
     return;
   }
   // Save to player's log
+  normalizeSeasonBases(currentPlayer);
   currentPlayer.weeklyLog[todayKey] = selectedValue;
   if (selectedValue > (currentPlayer.personalBest || 0)) currentPlayer.personalBest = selectedValue;
   recomputeSeasonTotal(currentPlayer);
