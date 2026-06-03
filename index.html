@@ -4156,19 +4156,36 @@ function getDayKey(date){return ['SUN','MON','TUE','WED','THU','FRI','SAT'][date
 function getWeekDateRange(date){var d=new Date(date),day=d.getDay(),diff=(day===0)?-6:1-day,mon=new Date(d);mon.setDate(d.getDate()+diff);var sat=new Date(mon);sat.setDate(mon.getDate()+5);var M=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];return M[mon.getMonth()]+' '+mon.getDate()+' - '+M[sat.getMonth()]+' '+sat.getDate();}
 function getWeekNumber(date){return Math.max(1,Math.floor((new Date(date)-new Date(2026,0,5))/(7*24*60*60*1000))+1);}
 function getDayLabel(date){var D=['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'],M=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];return D[date.getDay()]+' - '+M[date.getMonth()]+' '+date.getDate();}
+function getWeeklyRolloverStats(p) {
+  var makes = DAYS.reduce(function(s, d) { return s + (typeof p.weeklyLog[d] === 'number' ? p.weeklyLog[d] : 0); }, 0);
+  var days = DAYS.reduce(function(s, d) { return s + (typeof p.weeklyLog[d] === 'number' ? 1 : 0); }, 0);
+  return { makes: makes, days: days, season: p.seasonTotal || 0 };
+}
+
+function compareWeeklyRolloverPlayers(a, b) {
+  var as = getWeeklyRolloverStats(a), bs = getWeeklyRolloverStats(b);
+  if (bs.makes !== as.makes) return bs.makes - as.makes;
+  if (bs.days !== as.days) return bs.days - as.days;
+  if (bs.season !== as.season) return bs.season - as.season;
+  return String(a.name || '').localeCompare(String(b.name || ''));
+}
+
 async function performWeekRollover(oldKey, completedPreviousWeek){
   if (!PLAYERS || !PLAYERS.length) return;
-  PLAYERS.forEach(normalizeSeasonBases);
-  var _ws=[...PLAYERS].sort(function(a,b){var am=DAYS.reduce(function(s,d){return s+(typeof a.weeklyLog[d]==='number'?a.weeklyLog[d]:0);},0),bm=DAYS.reduce(function(s,d){return s+(typeof b.weeklyLog[d]==='number'?b.weeklyLog[d]:0);},0);return bm-am;});
-  var _wr=_ws.map(function(p){return {name:p.name,makes:DAYS.reduce(function(s,d){return s+(typeof p.weeklyLog[d]==='number'?p.weeklyLog[d]:0);},0)};}).filter(function(e){return e.makes>0;});
+  PLAYERS.forEach(function(p){ normalizeSeasonBases(p); recomputeSeasonTotal(p); });
+  var _ws=[...PLAYERS].sort(compareWeeklyRolloverPlayers);
+  var _wr=_ws.map(function(p){
+    var stats = getWeeklyRolloverStats(p);
+    return { name:p.name, makes:stats.makes, days:stats.days, season:stats.season };
+  }).filter(function(e){return e.makes>0;});
   if(_wr.length>0){
     var histDate=getCSTDate();
     if (completedPreviousWeek) histDate.setDate(histDate.getDate()-7);
     var entry={weekNum:getWeekNumber(histDate),weekRange:getWeekDateRange(histDate),winner:_wr[0],runners:_wr.slice(1,4)};
     WEEK_HISTORY.unshift(entry);
     await dbSaveWeekHistory(entry);
-    var _top=_wr[0].makes;
-    PLAYERS.forEach(function(p){var _pm=DAYS.reduce(function(s,d){return s+(typeof p.weeklyLog[d]==='number'?p.weeklyLog[d]:0);},0);if(_pm===_top&&_top>0)p.trophies=(p.trophies||0)+1;});
+    var winningPlayer = _ws.find(function(p){ return p.name === _wr[0].name; });
+    if (winningPlayer) winningPlayer.trophies = (winningPlayer.trophies || 0) + 1;
   }
   PLAYERS.forEach(function(p){
     var wm=DAYS.reduce(function(s,d){return s+(typeof p.weeklyLog[d]==='number'?p.weeklyLog[d]:0);},0);
